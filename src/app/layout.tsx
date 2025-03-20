@@ -31,9 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReactQueryProvider>
-          <BoardContextProvider>
-            <ThemeProvider>{children}</ThemeProvider>
-          </BoardContextProvider>
+          {/* <BoardContextProvider> */}
+          <ThemeProvider>{children}</ThemeProvider>
+          {/* </BoardContextProvider> */}
         </ReactQueryProvider>
       </body>
     </html>

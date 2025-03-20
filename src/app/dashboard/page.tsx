@@ -128,15 +128,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Board from "../board";
 import Navbar from "../navbar";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { apiRequest } from "../api/interceptor";
 import Modal from "../component/modal";
 import AddBoard from "../component/addBoard";
 import { Boards } from "@/types/board";
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { ThemeContext } from "@/context/themeContext";
 const API_URL = "http://localhost:3000";
 
 export default function Dashboard() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board");
@@ -150,8 +153,9 @@ export default function Dashboard() {
   } = useQuery<Boards[], Error>({
     queryKey: ["boards"], // Corrected queryKey usage
     queryFn: async () => {
-      const response = await apiRequest(`${API_URL}/getBoards`, "get");
+      const response = await apiRequest(`${API_URL}/boards`, "get");
       // Force the response to be a plain object using JSON methods
+      console.log(response);
       const parsedResponse = JSON.parse(JSON.stringify(response.response)); // Ensure it's plain JSON data
       return parsedResponse;
     },
@@ -162,14 +166,14 @@ export default function Dashboard() {
     mutationFn: async (newBoard: any) => {
       if (editId) {
         const response = await apiRequest(
-          `${API_URL}/updateBoard/${editId}`,
+          `${API_URL}/boards/${editId}`,
           "put",
           newBoard
         );
         return response;
       } else {
         const response = await apiRequest(
-          `${API_URL}/createBoard`,
+          `${API_URL}/boards`,
           "post",
           newBoard
         );
@@ -185,7 +189,7 @@ export default function Dashboard() {
   // Mutation to delete a board
   const deleteBoardHandler = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest(`${API_URL}/deleteBoard/${id}`, "delete");
+      await apiRequest(`${API_URL}/boards/${id}`, "delete");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boards"], exact: true }); // Invalidate boards data
@@ -217,7 +221,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar userName={localStorage.getItem("username") || ""} />
+      <Navbar userName={Cookies.get("username") || ""} />
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
           <h2>Boards</h2>

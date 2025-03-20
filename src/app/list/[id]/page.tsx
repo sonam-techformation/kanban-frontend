@@ -1,12 +1,11 @@
 "use client";
-import { useRouter } from "next/router";
-import Card from "../../component/card";
 import Navbar from "../../navbar";
-import React, { useEffect, useState } from "react";
+import React, { Usable, useEffect, useState } from "react";
 import { apiRequest } from "@/app/api/interceptor";
 import Modal from "@/app/component/modal";
 import AddBoard from "@/app/component/addBoard";
 import DraggableRow from "@/app/component/draggableRow";
+import { useQuery } from "@tanstack/react-query";
 const API_URL = `http://localhost:3000`;
 interface paramProps {
   params: {
@@ -14,32 +13,28 @@ interface paramProps {
   };
 }
 export default function List({ params }: paramProps) {
-  const [list, setList] = useState([]);
+  const { id } = React.use(params as unknown as Usable<{ id: number }>);
+
+  const {
+    data: list,
+    error,
+    isLoading,
+  } = useQuery<any[], Error>({
+    queryKey: ["list"], // Corrected queryKey usage
+    queryFn: async () => {
+      const response = await apiRequest(`${API_URL}/boards/${id}/lists`, "get");
+      // Force the response to be a plain object using JSON methods
+      console.log(response);
+      const parsedResponse = JSON.parse(JSON.stringify(response.response)); // Ensure it's plain JSON data
+      return parsedResponse;
+    },
+  });
+  // const [list, setList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board List");
 
-  const [board, setBoard] = useState([]);
   const [editId, setEditId] = useState(0);
   const [isEdit, setIsEdit] = useState(false);
-  const id = params.id;
-
-  useEffect(() => {
-    getList();
-  }, []);
-
-  async function getList() {
-    try {
-      let data = apiRequest(`${API_URL}/boards/${1}/lists`, "get");
-      data
-        .then((list) => {
-          console.log(list);
-          setList(list.response);
-        })
-        .catch((error) => console.log(error));
-    } catch (error) {
-      console.error("Registration failed:", error);
-    }
-  }
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -50,18 +45,30 @@ export default function List({ params }: paramProps) {
   };
 
   const addNewBoard = (newBoard: any) => {
-    try {
-      let data = apiRequest(`${API_URL}/boards/${id}/lists`, "post", newBoard);
+    let newList: any = {
+      name: newBoard.name,
+      position:
+        (list && list.length > 0 && +list[list.length - 1].position + 1) || 0,
+    };
 
-      data
-        .then((add) => {
-          setIsModalOpen(false);
-          getList();
-        })
-        .catch((error) => console.log(error));
+    console.log(newList);
+    try {
+      if (newList) {
+        let data = apiRequest(`${API_URL}/boards/${id}/lists`, "post", newList);
+
+        data
+          .then((add) => {
+            setIsModalOpen(false);
+          })
+          .catch((error) => console.log(error));
+      }
     } catch (error) {
       console.error("Board error", error);
     }
+  };
+
+  const addTask = () => {
+    console.log("clicked");
   };
 
   return (
@@ -81,14 +88,7 @@ export default function List({ params }: paramProps) {
           </div>
         </div>
       </div>
-      <DraggableRow
-        items={list.map((item: any) => ({
-          id: item.id,
-          content: item.name,
-          tasks: item.tasks,
-        }))}
-      />
-
+      <DraggableRow initialData={list || []} addTask={addTask} />
       <Modal modalTitle={modalTitle} isOpen={isModalOpen} onClose={closeModal}>
         <AddBoard
           onClose={() => setIsModalOpen(false)}

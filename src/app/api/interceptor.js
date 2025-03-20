@@ -1,31 +1,11 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
-// Reusable function to create headers
-const createHeaders = (token) => {
-  if (token) {
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    };
-  } else {
-    return {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-  }
-};
-
-// Create an Axios instance with interceptors
 const api = axios.create();
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Get the token from local storage or wherever it's stored
-    const token = localStorage.getItem("authToken");
+    const token = Cookies.get("token");
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -38,14 +18,13 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response) {
-      console.error("Response error:", error.response.data);
+      console.log("Response error:", error.response.data);
       if (error.response.status === 401) {
         console.log("Unauthorized, redirecting to login");
       }
@@ -87,4 +66,4 @@ const apiRequest = async (url, method = "GET", data = null) => {
   }
 };
 
-export { createHeaders, apiRequest };
+export { apiRequest };

@@ -1,4 +1,4 @@
-// components/Modal.tsx
+"use client";
 import React, { useEffect, useRef, ReactNode } from "react";
 
 interface ModalProps {

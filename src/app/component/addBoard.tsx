@@ -41,7 +41,7 @@ export default function AddBoard({
 
   useEffect(() => {
     if (isEdit) {
-      let data = apiRequest(`${API_URL}/getSingleBoard/${editId}`, "get");
+      let data = apiRequest(`${API_URL}/boards/${editId}`, "get");
       data
         .then((board) => {
           setValue("name", board.response.name);

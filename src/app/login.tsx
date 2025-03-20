@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 const API_URL = "http://localhost:3000";
 export default function Login() {
   const {
@@ -13,15 +14,15 @@ export default function Login() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
-
   const onSubmit = async (data: any) => {
     try {
       let user = await axios.post(`${API_URL}/login`, data);
-      localStorage.setItem("authToken", user.data.token);
-      localStorage.setItem("username", user.data.response.firstname);
+      Cookies.set("token", user.data.token, { expires: 1 });
+      Cookies.set("username", user.data.response.firstname);
       router.push("/dashboard");
     } catch (error) {
       console.error("Registration failed:", error);
+      router.push("/login");
     }
   };
   return (
