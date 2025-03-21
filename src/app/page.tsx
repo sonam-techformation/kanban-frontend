@@ -1,7 +1,10 @@
 "use client";
 import dynamic from "next/dynamic";
-import Page from "./page/page";
+import Cookies from "js-cookie";
+import Dashboard from "./dashboard/page";
+import Login from "./login/page";
 
 export default function Home() {
-  return <Page />;
+  const token = Cookies.get("token");
+  return token ? <Dashboard /> : <Login />;
 }

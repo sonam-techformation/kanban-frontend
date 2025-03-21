@@ -1,12 +1,6 @@
 "use client";
-import React, { useEffect, useRef, ReactNode } from "react";
-
-interface ModalProps {
-  modalTitle: string;
-  isOpen: boolean;
-  onClose: () => void;
-  children: ReactNode;
-}
+import { ModalProps } from "@/types/modal";
+import React, { useEffect, useRef } from "react";
 
 const Modal = ({ modalTitle, isOpen, onClose, children }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -39,10 +33,10 @@ const Modal = ({ modalTitle, isOpen, onClose, children }: ModalProps) => {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-100 opacity-75">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200 opacity-85">
         <div ref={modalRef} className="bg-white rounded-lg p-6 w-full max-w-md">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">{modalTitle}</h2>
+            <h2 className="text-base font-semibold">{modalTitle}</h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"

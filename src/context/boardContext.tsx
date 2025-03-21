@@ -1,7 +1,6 @@
 "use client";
 import React, { createContext, useContext, ReactNode } from "react";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { apiRequest } from "../app/api/interceptor";
 import { Boards } from "@/types/board";
 
 // Define the function to fetch boards

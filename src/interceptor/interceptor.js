@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { Router } from "next/router";
 
 const api = axios.create();
 
@@ -25,13 +26,17 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.log("Response error:", error.response.data);
+      Router.push("/login");
       if (error.response.status === 401) {
         console.log("Unauthorized, redirecting to login");
+        Router.push("/login");
       }
     } else if (error.request) {
       console.error("Request error:", error.request);
+      Router.push("/login");
     } else {
       console.error("Error:", error.message);
+      Router.push("/login");
     }
     return Promise.reject(error);
   }
@@ -46,6 +51,7 @@ const apiRequest = async (url, method = "GET", data = null) => {
         break;
       case "POST":
         response = await api.post(url, data);
+        console.log("interceptor ", response);
         break;
       case "PUT":
         response = await api.put(url, data);

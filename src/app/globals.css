@@ -25,4 +25,28 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.column-container{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.column-container > div {
+  width: 100%;
+  margin:15px 5px;
+}
+.card-space{
+  max-width:550px;
+  height: 550px;
+  overflow: auto;
+}
+.drop-section{
+  color:red;
+  background-color: white;
+height: 250px;
+}
+
+html{
+color-scheme: light dark;
+}
+
 

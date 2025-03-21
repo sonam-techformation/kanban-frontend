@@ -1,9 +1,7 @@
+"use client";
 import { ThemeContext, ThemeSwitcher } from "@/context/themeContext"; // Assuming your context is in this path
+import { NavbarProps } from "@/types/navbar";
 import { useContext } from "react";
-
-interface NavbarProps {
-  userName?: string;
-}
 
 export default function Navbar({ userName }: NavbarProps) {
   const { theme, toggleTheme } = useContext(ThemeContext);

@@ -1,12 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-// import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiRequest } from "../api/interceptor";
-const API_URL = "http://localhost:3000";
+import { apiRequest } from "@/interceptor/interceptor";
+import { Constants } from "@/utils/constant";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -41,7 +38,7 @@ export default function AddBoard({
 
   useEffect(() => {
     if (isEdit) {
-      let data = apiRequest(`${API_URL}/boards/${editId}`, "get");
+      let data = apiRequest(`${Constants.API_URL}/boards/${editId}`, "get");
       data
         .then((board) => {
           setValue("name", board.response.name);
@@ -75,7 +72,7 @@ export default function AddBoard({
         <div className="flex flex-1/2 justify-end">
           <div className="mx-0.5">
             <button
-              className=" bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
               type="submit"
               onClick={onSave}
             >
@@ -84,7 +81,7 @@ export default function AddBoard({
           </div>
           <div className="mx-0.5">
             <button
-              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
               type="button"
               onClick={handleClose}
             >
