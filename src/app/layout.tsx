@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/lib/react-query-provider";
-import { ThemeProvider } from "@/context/themeContext";
+import { ThemeProvider } from "next-themes";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,15 +24,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased  dark:bg-gray-500`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReactQueryProvider>
-          {/* <BoardContextProvider> */}
-          {/* You can place this wherever you want the button */}
-          <ThemeProvider>{children}</ThemeProvider>
-          {/* </BoardContextProvider> */}
+          <ThemeProvider
+            attribute="class"
+            enableSystem={false}
+            defaultTheme="light"
+            storageKey="theme"
+          >
+            {children}
+          </ThemeProvider>
         </ReactQueryProvider>
       </body>
     </html>

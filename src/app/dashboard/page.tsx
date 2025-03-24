@@ -126,22 +126,23 @@
 // }
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Board from "../component/board";
-import Modal from "../component/modal";
-import AddBoard from "../component/addBoard";
+import Board from "../components/board";
+import Modal from "../components/modal";
+import AddBoard from "../components/addBoard";
 import { Boards } from "@/types/board";
-import { useRouter } from "next/navigation";
-import { apiRequest } from "../../interceptor/interceptor";
 import { useState } from "react";
-import { Constants } from "@/utils/constant";
+import { createOrUpdateBoard, deleteBoard, getBoards } from "../api/boardApi";
+import { useApiMutation } from "@/lib/useApiMutation";
+import { AiOutlinePlus } from "react-icons/ai";
+import { useTheme } from "next-themes";
+import { bgColor, secondaryBgColor } from "@/utils/color";
 
 export default function Dashboard() {
-  const router = useRouter();
+  const { theme } = useTheme();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board");
   const [editId, setEditId] = useState<number | null>(null);
-
   // Fetch the boards using React Query
   const {
     data: boards,
@@ -149,30 +150,17 @@ export default function Dashboard() {
     isLoading,
   } = useQuery<Boards[], Error>({
     queryKey: ["boards"], // Corrected queryKey usage
-    queryFn: async () => {
-      const response = await apiRequest(`${Constants.API_URL}/boards`, "get");
-      // Force the response to be a plain object using JSON methods
-      const parsedResponse = JSON.parse(JSON.stringify(response.response)); // Ensure it's plain JSON data
-      return parsedResponse;
-    },
+    queryFn: async () => getBoards(1, 10),
   });
 
   // Mutation to create or update a board
   const addOrUpdateBoard = useMutation({
     mutationFn: async (newBoard: any) => {
       if (editId) {
-        const response = await apiRequest(
-          `${Constants.API_URL}/boards/${editId}`,
-          "put",
-          newBoard
-        );
+        const response = createOrUpdateBoard(newBoard, editId || undefined);
         return response;
       } else {
-        const response = await apiRequest(
-          `${Constants.API_URL}/boards`,
-          "post",
-          newBoard
-        );
+        const response = createOrUpdateBoard(newBoard);
         return response;
       }
     },
@@ -181,16 +169,11 @@ export default function Dashboard() {
       setIsModalOpen(false);
     },
   });
-
   // Mutation to delete a board
-  const deleteBoardHandler = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest(`${Constants.API_URL}/boards/${id}`, "delete");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boards"], exact: true }); // Invalidate boards data
-    },
-  });
+  const deleteBoardMutation = useApiMutation(
+    (id: number) => deleteBoard(id),
+    ["boards"]
+  );
 
   // Modal handling
   const openModal = (id: number | null = null, title: string = "Add Board") => {
@@ -211,53 +194,56 @@ export default function Dashboard() {
     openModal(id, "Edit Board");
   };
 
-  const deleteBoard = (id: number) => {
-    deleteBoardHandler.mutate(id);
-  };
-
   return (
     <>
-      {/* <Navbar userName={Cookies.get("username") || ""} /> */}
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Boards</h2>
-          <button
-            className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
-            type="button"
-            onClick={() => openModal()}
-          >
-            Create Board
-          </button>
-        </div>
-        <div className="flex flex-wrap">
-          {isLoading ? (
-            <div>Loading...</div>
-          ) : (
-            boards?.map((board) => (
-              <div key={board.id}>
-                <Board
-                  name={board.name}
-                  boardId={board.id}
-                  onEdit={() => editBoard(board.id)}
-                  onDelete={() => deleteBoard(board.id)}
-                />
+      <div className={`min-h-screen ${bgColor(theme)}`}>
+        <div className="container px-4 sm:px-6 lg:px-8 py-5 mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Boards</h2>
+            <button
+              className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+              type="button"
+              onClick={() => openModal()}
+            >
+              <div className="flex justify-center items-center">
+                <AiOutlinePlus className="mr-2" /> Create Board
               </div>
-            ))
-          )}
-        </div>
-        <Modal
-          modalTitle={modalTitle}
-          isOpen={isModalOpen}
-          onClose={closeModal}
-        >
-          <AddBoard
+            </button>
+          </div>
+          <div
+            className={`flex flex-wrap rounded-lg shadow-lg p-6 ${secondaryBgColor(
+              theme
+            )}`}
+          >
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : (
+              boards?.map((board) => (
+                <div key={board.id}>
+                  <Board
+                    name={board.name}
+                    boardId={board.id}
+                    onEdit={() => editBoard(board.id)}
+                    onDelete={() => deleteBoardMutation.mutate(board.id)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+          <Modal
+            modalTitle={modalTitle}
+            isOpen={isModalOpen}
             onClose={closeModal}
-            onSave={addNewBoard}
-            isEdit={editId !== null}
-            editId={editId}
-            labelName={"Board Name"}
-          />
-        </Modal>
+          >
+            <AddBoard
+              onClose={closeModal}
+              onSave={addNewBoard}
+              isEdit={editId !== null}
+              editId={editId}
+              labelName={"Board Name"}
+            />
+          </Modal>
+        </div>
       </div>
     </>
   );

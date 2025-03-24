@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/context/themeContext";
-import Navbar from "../component/navbar";
+import Navbar from "../components/navbar";
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { apiRequest } from "@/interceptor/interceptor";
 import { Constants } from "@/utils/constant";
+import { useTheme } from "next-themes";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -26,8 +26,7 @@ export default function AddBoard({
     setValue,
     formState: { errors },
   } = useForm();
-  const router = useRouter();
-
+  const { theme } = useTheme();
   const onSubmit = async (data: any) => {
     onSave(data);
   };
@@ -50,10 +49,7 @@ export default function AddBoard({
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
-          <label
-            htmlFor="name"
-            className="block text-gray-700 text-sm font-bold mb-2"
-          >
+          <label htmlFor="name" className="block  text-sm font-bold mb-2">
             {labelName}
           </label>
           <input

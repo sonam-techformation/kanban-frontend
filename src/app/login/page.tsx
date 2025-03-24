@@ -1,12 +1,12 @@
 "use client";
 import React, { useState } from "react";
-// import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { Constants } from "@/utils/constant";
+import { login } from "../api/authApi";
 export default function Login() {
   const {
     register,
@@ -14,14 +14,20 @@ export default function Login() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    setErrorMessage(null); // Clear previous errors
     try {
-      let user = await axios.post(`${Constants.API_URL}/login`, data);
-      Cookies.set("token", user.data.token, { expires: 1 });
-      Cookies.set("username", user.data.response.firstname);
+      let user = await login(data);
       router.push("/dashboard");
-    } catch (error) {
-      router.push("/login");
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -31,6 +37,9 @@ export default function Login() {
           Login
         </h2>
         <form onSubmit={handleSubmit(onSubmit)}>
+          {errorMessage && (
+            <p className="text-red-400 text-xs">{errorMessage}</p>
+          )}
           <div className="mb-4">
             <label
               htmlFor="email"
@@ -80,8 +89,9 @@ export default function Login() {
           <button
             className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit"
+            disabled={isLoading}
           >
-            Login
+            {isLoading ? "Loading..." : "Login"}
           </button>
         </form>
         <p className="mt-4 text-sm text-gray-600 text-center">

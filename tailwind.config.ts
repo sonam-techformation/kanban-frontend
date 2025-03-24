@@ -1,15 +1,31 @@
-// tailwind.config.js
-module.exports = {
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: "class", // Use class-based dark mode
   content: [
-    "./page/**/*.{js,ts,jsx,tsx}",
-    "./component/**/*.{js,ts,jsx,tsx}",
-    "./app/**/*.{js,ts,jsx,tsx}",
+    "./src/app/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
   ],
-  dark: "class", // Enable class-based dark mode
   theme: {
-    extend: {},
+    extend: {
+      // Customize your theme here
+      colors: {
+        primary: {
+          light: "#4f46e5", // Light mode primary color
+          dark: "#818cf8", // Dark mode primary color
+        },
+        background: {
+          light: "#ffffff", // Light mode background
+          dark: "#1f2937", // Dark mode background
+        },
+        text: {
+          light: "#111827", // Light mode text color
+          dark: "#f3f4f6", // Dark mode text color
+        },
+      },
+    },
   },
-  plugins: [
-    require("@tailwindcss/typography"), // Add Tailwind Typography plugin if needed
-  ],
+  plugins: [],
 };
+
+export default config;

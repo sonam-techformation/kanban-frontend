@@ -1,10 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Constants } from "@/utils/constant";
+import { signup } from "../api/authApi";
 export default function Register() {
   const {
     register,
@@ -13,17 +12,25 @@ export default function Register() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    setErrorMessage(null); // Clear previous errors
     try {
       let register = {
         firstname: data.firstname,
         email: data.email,
         password: data.password,
       };
-      await axios.post(`${Constants.API_URL}/signup`, register);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Registration failed:", error);
+      await signup(register);
+      router.push("/login");
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.message || "Signup failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -33,6 +40,9 @@ export default function Register() {
           Register User
         </h2>
         <form onSubmit={handleSubmit(onSubmit)}>
+          {errorMessage && (
+            <p className="text-red-400 text-xs">{errorMessage}</p>
+          )}
           <div className="mb-4">
             <label
               htmlFor="name"
@@ -132,8 +142,9 @@ export default function Register() {
           <button
             className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit"
+            disabled={isLoading}
           >
-            Register
+            {isLoading ? "Loading..." : "Register"}
           </button>
         </form>
         <p className="mt-4 text-sm text-gray-600 text-center">

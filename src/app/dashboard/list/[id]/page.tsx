@@ -1,16 +1,18 @@
 "use client";
-import Navbar from "../../component/navbar";
-import React, { Usable, useEffect, useState } from "react";
-import { apiRequest } from "@/interceptor/interceptor";
-import Modal from "@/app/component/modal";
-import AddBoard from "@/app/component/addBoard";
-import DraggableRow from "@/app/component/draggableRow";
+import Navbar from "../../../components/navbar";
+import React, { lazy, Suspense, Usable, useState } from "react";
+import Modal from "@/app/components/modal";
+import AddBoard from "@/app/components/addBoard";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import Draggable from "@/app/component/draggable";
+import Draggable from "@/app/components/draggable";
 import queryClient from "@/lib/react-query";
-import { Constants } from "@/utils/constant";
 import { paramProps } from "@/types/param";
+import { addList, getList } from "@/app/api/listApi";
+import { AiOutlinePlus } from "react-icons/ai";
+import { bgColor, borderColor, secondaryBgColor } from "@/utils/color";
+import { useTheme } from "next-themes";
 
+const LazyChildComponent = lazy(() => import("../../../components/draggable"));
 export default function List({ params }: paramProps) {
   const { id } = React.use(params as unknown as Usable<{ id: number }>);
 
@@ -20,15 +22,9 @@ export default function List({ params }: paramProps) {
     isLoading,
   } = useQuery<any[], Error>({
     queryKey: ["list"],
-    queryFn: async () => {
-      const response = await apiRequest(
-        `${Constants.API_URL}/boards/${id}/lists`,
-        "get"
-      );
-      const parsedResponse = JSON.parse(JSON.stringify(response.response));
-      return parsedResponse;
-    },
+    queryFn: () => getList(id),
   });
+  const { theme } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board List");
 
@@ -44,18 +40,14 @@ export default function List({ params }: paramProps) {
   };
 
   // Mutation to create or update a board
-  const addOrUpdateBoard = useMutation({
+  const addNewListToBoard = useMutation({
     mutationFn: async (newBoard: any) => {
       let newList: any = {
         name: newBoard.name,
         position:
           (list && list.length > 0 && +list[list.length - 1].position + 1) || 0,
       };
-      const response = await apiRequest(
-        `${Constants.API_URL}/boards/${id}/lists`,
-        "post",
-        newList
-      );
+      const response = await addList(id, newList);
       return response;
     },
     onSuccess: () => {
@@ -63,33 +55,43 @@ export default function List({ params }: paramProps) {
       setIsModalOpen(false);
     },
   });
-  const addNewBoard = (newBoard: any) => {
-    addOrUpdateBoard.mutate(newBoard); // Handle add or update of board
+
+  const addNewList = (newBoard: any) => {
+    addNewListToBoard.mutate(newBoard); // Handle add or update of board
   };
 
   return (
     <>
-      <div>
-        <Navbar />
-        <div className="container mx-auto p-4">
+      <div className={`min-h-screen  ${bgColor(theme)}`}>
+        <div className="container px-4 sm:px-6 lg:px-8 py-5 mx-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Board List</h2>
+            <h2 className="text-2xl font-bold ">Board List</h2>
             <button
               className="flex  text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
               type="button"
               onClick={openModal}
             >
-              Add List
+              <div className="flex justify-center items-center">
+                <AiOutlinePlus className="mr-2" />
+                Add List
+              </div>
             </button>
           </div>
-          <Draggable initialData={list || []} />
+          <div
+            className={`${secondaryBgColor(theme)} border ${borderColor(
+              theme
+            )} rounded-lg p-5`}
+          >
+            <Suspense fallback={<div>Loading...</div>}>
+              <LazyChildComponent initialData={list || []} />
+            </Suspense>
+          </div>
         </div>
       </div>
-      {/* <DraggableRow initialData={list || []} addTask={addTask} /> */}
       <Modal modalTitle={modalTitle} isOpen={isModalOpen} onClose={closeModal}>
         <AddBoard
           onClose={() => setIsModalOpen(false)}
-          onSave={addNewBoard}
+          onSave={addNewList}
           isEdit={isEdit}
           editId={editId}
           labelName={"List Name"}
