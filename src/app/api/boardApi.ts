@@ -6,8 +6,10 @@ export const getBoards = async (page: number = 1, limit: number = 10) => {
     `${Constants.API_URL}/boards?page=${page}&limit=${limit}`,
     "get"
   );
-  const parsedResponse = JSON.parse(JSON.stringify(response.response)); // Ensure it's plain JSON data
-  return parsedResponse;
+  return {
+    data: JSON.parse(JSON.stringify(response.response)),
+    pagination: JSON.parse(JSON.stringify(response.pagination)),
+  };
 };
 
 export const createOrUpdateBoard = async (board: any, id?: number) => {

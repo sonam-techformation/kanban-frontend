@@ -1,178 +1,172 @@
 "use client";
-// import axios from "axios";
-// import Board from "../board";
-// import Navbar from "../navbar";
-// import { useEffect, useState } from "react";
-// import { apiRequest } from "../api/interceptor";
-// import Modal from "../component/modal";
-// import AddBoard from "../component/addBoard";
-// import { useQuery } from "@tanstack/react-query";
-// import { Boards } from "@/types/board";
-// const API_URL = "http://localhost:3000";
-// export default function Dashboard() {
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [modalTitle, setModalTitle] = useState("Add Board");
-
-//   const [board, setBoard] = useState([]);
-//   const [editId, setEditId] = useState(0);
-//   const [isEdit, setIsEdit] = useState(false);
-
-//   const [name, setName] = useState("");
-
-//   useEffect(() => {
-//     let user = localStorage.getItem("username");
-//     setName(user || "");
-//     getBoards();
-//   }, []);
-//   async function getBoards() {
-//     try {
-//       let data = apiRequest(`${API_URL}/getBoards`, "get");
-//       data
-//         .then((board) => {
-//           setBoard(board.response);
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Registration failed:", error);
-//     }
-//   }
-//   const openModal = () => {
-//     console.log("open clicked");
-//     setIsModalOpen(true);
-//   };
-
-//   const closeModal = () => {
-//     setIsModalOpen(false);
-//   };
-
-//   const addNewBoard = (newBoard: any) => {
-//     try {
-//       let data =
-//         modalTitle === "Add Board"
-//           ? apiRequest(`${API_URL}/createBoard`, "post", newBoard)
-//           : apiRequest(`${API_URL}/updateBoard/${editId}`, "put", newBoard);
-//       data
-//         .then((add) => {
-//           setIsModalOpen(false);
-//           getBoards();
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Board error", error);
-//     }
-//   };
-
-//   const editBoard = (id: number) => {
-//     setIsModalOpen(true);
-//     setModalTitle("Edit Board");
-//     setEditId(id);
-//     setIsEdit(true);
-//   };
-
-//   const deleteBoard = (id: number) => {
-//     console.log(id);
-//     try {
-//       let data = apiRequest(`${API_URL}/deleteBoard/${id}`, "delete");
-//       data
-//         .then((board) => {
-//           setBoard((previous) => previous.filter((d: any) => d.id !== id));
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Delete failed:", error);
-//     }
-//   };
-
-//   return (
-//     <>
-//       <Navbar userName={name} />
-//       <div className="container mx-auto p-4">
-//         <div className="flex justify-between items-center mb-4">
-//           <h2>Boards</h2>
-//           <button
-//             className="flex  text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-//             type="button"
-//             onClick={openModal}
-//           >
-//             Create Board
-//           </button>
-//         </div>
-//         <div className="flex flex-wrap">
-//           {board.map((d: any, i: number) => {
-//             return (
-//               <div key={d.id}>
-//                 <Board
-//                   name={d.name}
-//                   boardId={d.id}
-//                   onEdit={() => editBoard(d.id)}
-//                   onDelete={() => deleteBoard(d.id)}
-//                 />
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-//       <Modal modalTitle={modalTitle} isOpen={isModalOpen} onClose={closeModal}>
-//         <AddBoard
-//           onClose={() => setIsModalOpen(false)}
-//           onSave={addNewBoard}
-//           isEdit={isEdit}
-//           editId={editId}
-//           labelName={"Board Name"}
-//         />
-//       </Modal>
-//     </>
-//   );
-// }
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Board from "../components/board";
 import Modal from "../components/modal";
 import AddBoard from "../components/addBoard";
 import { Boards } from "@/types/board";
-import { useState } from "react";
+import { Key, useState } from "react";
 import { createOrUpdateBoard, deleteBoard, getBoards } from "../api/boardApi";
 import { useApiMutation } from "@/lib/useApiMutation";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { bgColor, secondaryBgColor } from "@/utils/color";
+import { Pagination } from "../components/pagination";
+interface BoardsResponse {
+  data: Boards[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    // other pagination fields
+  };
+}
 
+// Assuming these types exist in your codebase
+interface Board {
+  id?: number;
+  // other board properties
+}
+
+interface ApiResponse {
+  data: Board | Board[];
+  pagination?: any; // Replace with proper pagination type if available
+}
 export default function Dashboard() {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board");
   const [editId, setEditId] = useState<number | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
   // Fetch the boards using React Query
   const {
     data: boards,
     error,
     isLoading,
-  } = useQuery<Boards[], Error>({
-    queryKey: ["boards"], // Corrected queryKey usage
-    queryFn: async () => getBoards(1, 10),
+  } = useQuery<BoardsResponse, Error>({
+    queryKey: ["boards", pagination.page, pagination.limit], // Corrected queryKey usage
+    queryFn: async () => getBoards(pagination.page, pagination.limit),
   });
 
-  // Mutation to create or update a board
-  const addOrUpdateBoard = useMutation({
-    mutationFn: async (newBoard: any) => {
-      if (editId) {
-        const response = createOrUpdateBoard(newBoard, editId || undefined);
-        return response;
-      } else {
-        const response = createOrUpdateBoard(newBoard);
-        return response;
+  // Add this interface at the top of your file
+  interface MutationContext {
+    previousBoards: BoardsResponse | undefined;
+  }
+
+  // For addOrUpdateBoard mutation
+  const addOrUpdateBoard = useMutation<Board, Error, Board, MutationContext>({
+    mutationFn: async (newBoard: Board) => {
+      return await createOrUpdateBoard(newBoard, editId || undefined);
+    },
+    onMutate: async (newBoard) => {
+      await queryClient.cancelQueries({
+        queryKey: ["boards", pagination.page, pagination.limit],
+      });
+
+      const previousBoards = queryClient.getQueryData<BoardsResponse>([
+        "boards",
+        pagination.page,
+        pagination.limit,
+      ]);
+
+      if (previousBoards) {
+        if (editId) {
+          queryClient.setQueryData<BoardsResponse>(
+            ["boards", pagination.page, pagination.limit],
+            {
+              ...previousBoards,
+              data: previousBoards.data.map((board) =>
+                board.id === editId ? { ...board, ...newBoard } : board
+              ),
+            }
+          );
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["boards"] });
+        }
+      }
+
+      return { previousBoards };
+    },
+    onError: (err, newBoard, context) => {
+      if (context?.previousBoards) {
+        queryClient.setQueryData(
+          ["boards", pagination.page, pagination.limit],
+          context.previousBoards
+        );
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boards"], exact: true });
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["boards", pagination.page, pagination.limit],
+      });
       setIsModalOpen(false);
     },
   });
-  // Mutation to delete a board
-  const deleteBoardMutation = useApiMutation(
-    (id: number) => deleteBoard(id),
-    ["boards"]
+
+  // For deleteBoardMutation
+  const deleteBoardMutation = useMutation<void, Error, number, MutationContext>(
+    {
+      mutationFn: (id: number) => deleteBoard(id),
+      onMutate: async (id) => {
+        await queryClient.cancelQueries({
+          queryKey: ["boards", pagination.page, pagination.limit],
+        });
+
+        const previousBoards = queryClient.getQueryData<BoardsResponse>([
+          "boards",
+        ]);
+
+        if (previousBoards) {
+          queryClient.setQueryData<BoardsResponse>(
+            ["boards", pagination.page, pagination.limit],
+            {
+              ...previousBoards,
+              data: previousBoards.data.filter((board) => board.id !== id),
+              pagination: {
+                ...previousBoards.pagination,
+                totalItems: previousBoards.pagination.totalItems - 1,
+                totalPages: Math.ceil(
+                  (previousBoards.pagination.totalItems - 1) /
+                    previousBoards.pagination.limit
+                ),
+              },
+            }
+          );
+        }
+
+        return { previousBoards };
+      },
+      onError: (err, id, context) => {
+        if (context?.previousBoards) {
+          queryClient.setQueryData(
+            ["boards", pagination.page, pagination.limit],
+            context.previousBoards
+          );
+        }
+      },
+      onSettled: () => {
+        queryClient
+          .invalidateQueries({
+            queryKey: ["boards", pagination.page, pagination.limit],
+          })
+          .then(() => {
+            if (
+              boards?.pagination &&
+              boards.data.length === 1 &&
+              pagination.page > 1
+            ) {
+              setPagination((prev) => ({
+                ...prev,
+                page: Math.max(prev.page - 1, 1),
+              }));
+            }
+          });
+      },
+    }
   );
 
   // Modal handling
@@ -187,11 +181,16 @@ export default function Dashboard() {
   };
 
   const addNewBoard = (newBoard: any) => {
+    console.log(newBoard);
     addOrUpdateBoard.mutate(newBoard); // Handle add or update of board
   };
 
   const editBoard = (id: number) => {
     openModal(id, "Edit Board");
+  };
+
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
   };
 
   return (
@@ -210,25 +209,38 @@ export default function Dashboard() {
               </div>
             </button>
           </div>
-          <div
-            className={`flex flex-wrap rounded-lg shadow-lg p-6 ${secondaryBgColor(
-              theme
-            )}`}
-          >
-            {isLoading ? (
-              <div>Loading...</div>
-            ) : (
-              boards?.map((board) => (
-                <div key={board.id}>
-                  <Board
-                    name={board.name}
-                    boardId={board.id}
-                    onEdit={() => editBoard(board.id)}
-                    onDelete={() => deleteBoardMutation.mutate(board.id)}
-                  />
-                </div>
-              ))
-            )}
+          <div>
+            <div
+              className={`flex flex-wrap rounded-lg shadow-lg p-6 ${secondaryBgColor(
+                theme
+              )}`}
+            >
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                boards?.data.map((board) => (
+                  <div key={board.id}>
+                    <Board
+                      name={board.name}
+                      boardId={board.id}
+                      onEdit={() => editBoard(board.id)}
+                      onDelete={() => deleteBoardMutation.mutate(board.id)}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+            <div>
+              {boards?.pagination && (
+                <Pagination
+                  totalItems={boards.pagination.totalItems}
+                  limit={boards.pagination.limit}
+                  currentPage={boards.pagination.page}
+                  totalPages={boards.pagination.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </div>
           </div>
           <Modal
             modalTitle={modalTitle}

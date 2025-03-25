@@ -1,7 +1,7 @@
 "use client";
 import { apiRequest } from "@/interceptor/interceptor";
 import { listTextColor, textColor } from "@/utils/color";
-import React, { lazy, useState } from "react";
+import React, { lazy, useEffect, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import Modal from "./modal";
 import AddTask from "./addTask";
@@ -14,6 +14,8 @@ import { addNewTaskToList } from "../api/taskApi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { text } from "stream/consumers";
 import { useTheme } from "next-themes";
+import { assignTask } from "../api/taskAssignApi";
+import { useSocket } from "@/context/socketContext";
 
 export const Column: React.FC<ColumnProps> = ({
   column,
@@ -25,6 +27,7 @@ export const Column: React.FC<ColumnProps> = ({
   const [editId, setEditId] = useState(0);
   const [isEdit, setIsEdit] = useState(false);
   const { theme } = useTheme();
+  const { socket, notifications } = useSocket();
   // Modal handling
   const openModal = () => {
     setIsModalOpen(true);
@@ -102,6 +105,19 @@ export const Column: React.FC<ColumnProps> = ({
       };
 
       const response = await addNewTaskToList(column.id, newtask);
+      let assign = {
+        taskId: response.id,
+        toUser: +task.assignTo,
+        byUser: 1,
+      };
+      const response1 = await assignTask(assign);
+      if (response1) {
+        socket?.emit("taskAssigne", {
+          taskId: response.id,
+          toUser: +task.assignTo,
+          byUser: 1,
+        });
+      }
       setIsModalOpen(false);
       return response;
     },

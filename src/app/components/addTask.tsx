@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/interceptor/interceptor";
 import { Constants } from "@/utils/constant";
+import { getAllUser } from "../api/taskAssignApi";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -25,9 +26,9 @@ export default function AddTask({
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const [user, setUsers] = useState([]);
 
   const onSubmit = async (data: any) => {
-    console.log(data);
     onSave(data);
   };
 
@@ -35,19 +36,27 @@ export default function AddTask({
     onClose();
   };
 
+  // useEffect(() => {
+  //   console.log(editId, "isEdit", isEdit);
+  //   if (isEdit) {
+  //     let data = apiRequest(`${Constants.API_URL}/tasks/${editId}`, "get");
+  //     data
+  //       .then((board) => {
+  //         setValue("title", board.response.title);
+  //         setValue("description", board.response.description);
+  //       })
+  //       .catch((error) => console.log(error));
+  //   }
+  // }, [editId]);
+
   useEffect(() => {
-    console.log(editId, "isEdit", isEdit);
-    if (isEdit) {
-      let data = apiRequest(`${Constants.API_URL}/tasks/${editId}`, "get");
-      data
-        .then((board) => {
-          console.log("board", board);
-          setValue("title", board.response.title);
-          setValue("description", board.response.description);
-        })
-        .catch((error) => console.log(error));
-    }
-  }, [editId]);
+    const getAllUsers = async () => {
+      const user = await getAllUser();
+      setUsers(user.response);
+    };
+
+    getAllUsers();
+  }, []);
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -84,9 +93,38 @@ export default function AddTask({
             id="description"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
             {...register("description", {
-              required: "Deacription is required",
+              required: "Description is required",
             })}
           />
+          {errors.description && (
+            <p className="text-red-400 text-xs">
+              {errors?.description!.message as string}
+            </p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label
+            htmlFor="assignTo"
+            className="block text-gray-700 text-sm font-bold mb-2"
+          >
+            {"Assign To"}
+          </label>
+          <select
+            id="assignTo"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            {...register("assignTo", {
+              required: "Assignment is required",
+            })}
+          >
+            {user?.map((u: any) => {
+              return (
+                <option value={u.id} key={u.id}>
+                  {u.firstname}
+                </option>
+              );
+            })}
+          </select>
           {errors.description && (
             <p className="text-red-400 text-xs">
               {errors?.description!.message as string}
@@ -98,7 +136,6 @@ export default function AddTask({
             <button
               className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
               type="submit"
-              onClick={onSave}
             >
               Save
             </button>

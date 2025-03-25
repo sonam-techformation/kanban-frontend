@@ -28,6 +28,7 @@ export default function AddBoard({
   } = useForm();
   const { theme } = useTheme();
   const onSubmit = async (data: any) => {
+    console.log(data);
     onSave(data);
   };
 
@@ -44,7 +45,7 @@ export default function AddBoard({
         })
         .catch((error) => console.log(error));
     }
-  }, []);
+  }, [isEdit, editId]);
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -70,7 +71,6 @@ export default function AddBoard({
             <button
               className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
               type="submit"
-              onClick={onSave}
             >
               Save
             </button>

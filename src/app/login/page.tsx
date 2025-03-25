@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { Constants } from "@/utils/constant";
 import { login } from "../api/authApi";
+import { useSocket } from "@/context/socketContext";
 export default function Login() {
   const {
     register,
@@ -16,12 +17,17 @@ export default function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { registerUser } = useSocket();
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     setErrorMessage(null); // Clear previous errors
     try {
-      let user = await login(data);
-      router.push("/dashboard");
+      let user: any;
+      user = await login(data);
+      if (user && user.data.status === "success") {
+        registerUser(user.data.response.id);
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.message || "Login failed. Please try again."
