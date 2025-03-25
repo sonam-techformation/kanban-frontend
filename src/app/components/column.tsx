@@ -110,14 +110,8 @@ export const Column: React.FC<ColumnProps> = ({
         toUser: +task.assignTo,
         byUser: 1,
       };
-      const response1 = await assignTask(assign);
-      if (response1) {
-        socket?.emit("taskAssigne", {
-          taskId: response.id,
-          toUser: +task.assignTo,
-          byUser: 1,
-        });
-      }
+       await assignTask(assign);
+    
       setIsModalOpen(false);
       return response;
     },
