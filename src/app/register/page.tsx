@@ -23,11 +23,14 @@ export default function Register() {
         email: data.email,
         password: data.password,
       };
-      await signup(register);
-      router.push("/login");
+      const response = await signup(register);
+      if (response && response.data.status === "success") {
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       setErrorMessage(
-        error.response?.data?.message || "Signup failed. Please try again."
+        error.response?.data?.response.error ||
+          "Signup failed. Please try again."
       );
     } finally {
       setIsLoading(false);

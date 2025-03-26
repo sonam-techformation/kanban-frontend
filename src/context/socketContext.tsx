@@ -91,7 +91,6 @@
 
 // export const useSocket = () => useContext(SocketContext);
 
-
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -127,7 +126,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [taskMovedCallback, setTaskMovedCallback] = useState<((data: any) => void) | null>(null);
+  const [taskMovedCallback, setTaskMovedCallback] = useState<
+    ((data: any) => void) | null
+  >(null);
 
   const addNotification = (notification: Notification) => {
     setNotifications((prev) => [notification, ...prev]);
@@ -150,7 +151,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const socketInstance = io(
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000",
+      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000",
       {
         withCredentials: true,
         auth: { token: Cookies.get("token") },
@@ -195,13 +196,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SocketContext.Provider
-      value={{ 
-        socket, 
-        notifications, 
-        addNotification, 
+      value={{
+        socket,
+        notifications,
+        addNotification,
         registerUser,
         subscribeToTaskMoved,
-        unsubscribeFromTaskMoved
+        unsubscribeFromTaskMoved,
       }}
     >
       {children}

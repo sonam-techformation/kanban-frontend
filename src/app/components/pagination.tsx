@@ -1,3 +1,4 @@
+"use client";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 interface PaginationProps {

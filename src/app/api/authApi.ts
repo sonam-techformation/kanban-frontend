@@ -9,15 +9,17 @@ export const login = async (data: any) => {
     Cookies.set("username", response.data.response.firstname);
     return response;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 };
 
 export const signup = async (register: any) => {
   try {
     const response = await axios.post(`${Constants.API_URL}/signup`, register);
+    Cookies.set("token", response.data.token, { expires: 365 });
+    Cookies.set("username", response.data.response.firstname);
     return response;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 };

@@ -1,3 +1,4 @@
+"use client";
 import queryClient from "@/lib/react-query";
 import { ItemType } from "@/types/enum";
 import { TaskProps } from "@/types/task";

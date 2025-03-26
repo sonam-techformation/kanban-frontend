@@ -25,13 +25,8 @@ interface BoardsResponse {
 // Assuming these types exist in your codebase
 interface Board {
   id?: number;
-  // other board properties
 }
 
-interface ApiResponse {
-  data: Board | Board[];
-  pagination?: any; // Replace with proper pagination type if available
-}
 export default function Dashboard() {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
@@ -50,6 +45,7 @@ export default function Dashboard() {
   } = useQuery<BoardsResponse, Error>({
     queryKey: ["boards", pagination.page, pagination.limit], // Corrected queryKey usage
     queryFn: async () => getBoards(pagination.page, pagination.limit),
+    retry: false,
   });
 
   // Add this interface at the top of your file
@@ -181,7 +177,6 @@ export default function Dashboard() {
   };
 
   const addNewBoard = (newBoard: any) => {
-    console.log(newBoard);
     addOrUpdateBoard.mutate(newBoard); // Handle add or update of board
   };
 
@@ -215,6 +210,7 @@ export default function Dashboard() {
                 theme
               )}`}
             >
+              {error ? "Error loading boards" : null}
               {isLoading ? (
                 <div>Loading...</div>
               ) : (

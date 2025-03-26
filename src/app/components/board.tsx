@@ -1,3 +1,4 @@
+"use client";
 import { boardColor, borderColor, textColor } from "@/utils/color";
 import { useTheme } from "next-themes";
 import Link from "next/link";

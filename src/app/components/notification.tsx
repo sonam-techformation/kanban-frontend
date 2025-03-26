@@ -1,4 +1,4 @@
-// components/Notifications.tsx
+"use client";
 import { useSocket } from "@/context/socketContext";
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";

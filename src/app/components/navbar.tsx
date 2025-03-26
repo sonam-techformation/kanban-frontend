@@ -6,19 +6,26 @@ import { navBgColor } from "@/utils/color";
 import { MdLogout } from "react-icons/md";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/context/socketContext";
+import Link from "next/link";
 export default function Navbar({ userName }: NavbarProps) {
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const { socket } = useSocket();
   const router = useRouter();
   const logout = () => {
     Cookies.remove("token");
     Cookies.remove("username");
+    socket?.disconnect();
+    setTheme("light");
     router.push("/login");
   };
   return (
     <header className={`${navBgColor(theme)} shadow-md `}>
       <div className=" mx-auto flex justify-between items-center py-4 px-6">
         <div className="flex items-center">
-          <span className="font-semibold text-xl">{"Kanban Board"}</span>
+          <Link href={`/dashboard`}>
+            <span className="font-semibold text-xl">{"Kanban Board"}</span>
+          </Link>
         </div>
 
         <div className="flex items-center justify-center ">

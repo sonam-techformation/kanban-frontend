@@ -1,11 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-import { Constants } from "@/utils/constant";
 import { login } from "../api/authApi";
 import { useSocket } from "@/context/socketContext";
 export default function Login() {
@@ -30,7 +27,8 @@ export default function Login() {
       }
     } catch (error: any) {
       setErrorMessage(
-        error.response?.data?.message || "Login failed. Please try again."
+        error.response?.data?.response.error ||
+          "Login failed. Please try again."
       );
     } finally {
       setIsLoading(false);

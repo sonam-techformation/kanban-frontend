@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { apiRequest } from "@/interceptor/interceptor";
-import { Constants } from "@/utils/constant";
 import { getAllUser } from "../api/taskAssignApi";
+import { bgColor, textColor } from "@/utils/color";
+import { useTheme } from "next-themes";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -23,11 +23,12 @@ export default function AddTask({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm();
   const router = useRouter();
   const [user, setUsers] = useState([]);
-
+  const { theme } = useTheme();
   const onSubmit = async (data: any) => {
     onSave(data);
   };
@@ -35,19 +36,6 @@ export default function AddTask({
   const handleClose = () => {
     onClose();
   };
-
-  // useEffect(() => {
-  //   console.log(editId, "isEdit", isEdit);
-  //   if (isEdit) {
-  //     let data = apiRequest(`${Constants.API_URL}/tasks/${editId}`, "get");
-  //     data
-  //       .then((board) => {
-  //         setValue("title", board.response.title);
-  //         setValue("description", board.response.description);
-  //       })
-  //       .catch((error) => console.log(error));
-  //   }
-  // }, [editId]);
 
   useEffect(() => {
     const getAllUsers = async () => {
@@ -61,10 +49,7 @@ export default function AddTask({
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
-          <label
-            htmlFor="title"
-            className="block text-gray-700 text-sm font-bold mb-2"
-          >
+          <label htmlFor="title" className="block  text-sm font-bold mb-2">
             {"Title"}
           </label>
           <input
@@ -83,7 +68,7 @@ export default function AddTask({
         <div className="mb-4">
           <label
             htmlFor="description"
-            className="block text-gray-700 text-sm font-bold mb-2"
+            className="block  text-sm font-bold mb-2"
           >
             {"Description"}
           </label>
@@ -104,14 +89,12 @@ export default function AddTask({
         </div>
 
         <div className="mb-4">
-          <label
-            htmlFor="assignTo"
-            className="block text-gray-700 text-sm font-bold mb-2"
-          >
+          <label htmlFor="assignTo" className="block  text-sm font-bold mb-2">
             {"Assign To"}
           </label>
           <select
             id="assignTo"
+            aria-placeholder="Assign To"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
             {...register("assignTo", {
               required: "Assignment is required",
@@ -119,15 +102,19 @@ export default function AddTask({
           >
             {user?.map((u: any) => {
               return (
-                <option value={u.id} key={u.id}>
+                <option
+                  value={u.id}
+                  key={u.id}
+                  className={`${bgColor(theme)} ${textColor(theme)}}`}
+                >
                   {u.firstname}
                 </option>
               );
             })}
           </select>
-          {errors.description && (
+          {errors.assignTo && (
             <p className="text-red-400 text-xs">
-              {errors?.description!.message as string}
+              {errors?.assignTo!.message as string}
             </p>
           )}
         </div>

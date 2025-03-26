@@ -1,7 +1,6 @@
 "use client";
-import { apiRequest } from "@/interceptor/interceptor";
-import { listTextColor, textColor } from "@/utils/color";
-import React, { lazy, useEffect, useState } from "react";
+import { listTextColor } from "@/utils/color";
+import React, { useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import Modal from "./modal";
 import AddTask from "./addTask";
@@ -12,10 +11,8 @@ import { ColumnProps } from "@/types/column";
 import { ItemType } from "@/types/enum";
 import { addNewTaskToList } from "../api/taskApi";
 import { AiOutlinePlus } from "react-icons/ai";
-import { text } from "stream/consumers";
 import { useTheme } from "next-themes";
 import { assignTask } from "../api/taskAssignApi";
-import { useSocket } from "@/context/socketContext";
 
 export const Column: React.FC<ColumnProps> = ({
   column,
@@ -23,11 +20,9 @@ export const Column: React.FC<ColumnProps> = ({
   moveColumn,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState("Add Task");
-  const [editId, setEditId] = useState(0);
-  const [isEdit, setIsEdit] = useState(false);
+  const [modalTitle] = useState("Add Task");
+  const [editId] = useState(0);
   const { theme } = useTheme();
-  const { socket, notifications } = useSocket();
   // Modal handling
   const openModal = () => {
     setIsModalOpen(true);
@@ -110,8 +105,8 @@ export const Column: React.FC<ColumnProps> = ({
         toUser: +task.assignTo,
         byUser: 1,
       };
-       await assignTask(assign);
-    
+      await assignTask(assign);
+
       setIsModalOpen(false);
       return response;
     },
@@ -161,7 +156,7 @@ export const Column: React.FC<ColumnProps> = ({
           <div className="text-center text-gray-500">Drop tasks here</div>
         )}
       </div>
-      <Modal modalTitle={"Add Task"} isOpen={isModalOpen} onClose={closeModal}>
+      <Modal modalTitle={modalTitle} isOpen={isModalOpen} onClose={closeModal}>
         <AddTask
           onClose={() => setIsModalOpen(false)}
           onSave={addNewTask}
