@@ -8,7 +8,7 @@ export const addNewTaskToList = async (listId: number, newTask: any) => {
       "post",
       newTask
     );
-    return response.response;
+    return response;
   } catch (error) {
     throw error;
   }

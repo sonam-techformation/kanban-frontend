@@ -7,7 +7,8 @@ import Cookies from "js-cookie";
 
 type AuthContextType = {
   token: string | null;
-  login: (token: string) => void;
+  userName: string | "";
+  login: (token: string, username: string) => void;
   logout: () => void;
 };
 
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | "">("");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -24,15 +26,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken) setToken(storedToken);
   }, []);
 
-  const login = (newToken: string) => {
-    Cookies.set("token", newToken);
+  const login = (newToken: string, username: string) => {
+    Cookies.set("token", newToken, { expires: 365 });
+    Cookies.set("username", username);
     setToken(newToken);
+    setUserName(username);
     router.push("/dashboard");
   };
 
   const logout = () => {
     Cookies.remove("token");
     setToken(null);
+    setUserName("");
+    Cookies.remove("token");
+    Cookies.remove("username");
     router.push("/login");
   };
 
@@ -47,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token, pathname, router]);
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ token, userName, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

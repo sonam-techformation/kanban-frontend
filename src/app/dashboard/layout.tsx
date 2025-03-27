@@ -1,8 +1,9 @@
 "use client";
 import Navbar from "../components/navbar";
-import Cookies from "js-cookie";
 import { Notifications } from "../components/notification";
 import { Toaster } from "react-hot-toast";
+import { Suspense } from "react";
+
 export default function DashboardLayout({
   children,
 }: Readonly<{
@@ -10,10 +11,10 @@ export default function DashboardLayout({
 }>) {
   return (
     <>
-      <Navbar userName={Cookies.get("username")} />
+      <Navbar />
       <Notifications />
       <Toaster />
-      {children}
+      <Suspense>{children}</Suspense>
     </>
   );
 }

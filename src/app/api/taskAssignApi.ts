@@ -1,12 +1,15 @@
 import { apiRequest } from "@/interceptor/interceptor";
 import { Constants } from "@/utils/constant";
 
-export const getAllUser = async () => {
+export const getAllUser = async (boardOwnerId: number) => {
   try {
-    const response = await apiRequest(`${Constants.API_URL}/users`, "get");
+    const response = await apiRequest(
+      `${Constants.API_URL}/users/${boardOwnerId}`,
+      "get"
+    );
     return response;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 };
 

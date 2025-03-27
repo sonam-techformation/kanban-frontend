@@ -13,6 +13,7 @@ import { addNewTaskToList } from "../api/taskApi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { assignTask } from "../api/taskAssignApi";
+import toast from "react-hot-toast";
 
 export const Column: React.FC<ColumnProps> = ({
   column,
@@ -20,12 +21,15 @@ export const Column: React.FC<ColumnProps> = ({
   moveColumn,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [boardOwner, setBoardOwner] = useState(0);
   const [modalTitle] = useState("Add Task");
   const [editId] = useState(0);
   const { theme } = useTheme();
+
   // Modal handling
   const openModal = () => {
     setIsModalOpen(true);
+    setBoardOwner(column.board_id ?? "0");
   };
 
   const closeModal = () => {
@@ -100,14 +104,16 @@ export const Column: React.FC<ColumnProps> = ({
       };
 
       const response = await addNewTaskToList(column.id, newtask);
+      if (response.status !== "success") return response;
       let assign = {
-        taskId: response.id,
+        taskId: response.response.id,
         toUser: +task.assignTo,
         byUser: 1,
       };
       await assignTask(assign);
 
       setIsModalOpen(false);
+      toast.success("Task added successfully");
       return response;
     },
     onSuccess: () => {
@@ -162,6 +168,7 @@ export const Column: React.FC<ColumnProps> = ({
           onSave={addNewTask}
           isEdit={editId !== null}
           editId={editId}
+          boardOwnerId={boardOwner}
         />
       </Modal>
     </div>

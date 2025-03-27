@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { login } from "../api/authApi";
+import { loginApi } from "../api/authApi";
 import { useSocket } from "@/context/socketContext";
+import { useAuth } from "@/context/authContext";
 export default function Login() {
   const {
     register,
@@ -12,6 +13,14 @@ export default function Login() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const { token, login } = useAuth();
+
+  useEffect(() => {
+    if (token) {
+      router.replace("/dashboard"); // Redirect if already logged in
+    }
+  }, [token, router]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { registerUser } = useSocket();
@@ -20,10 +29,10 @@ export default function Login() {
     setErrorMessage(null); // Clear previous errors
     try {
       let user: any;
-      user = await login(data);
+      user = await loginApi(data);
       if (user && user.data.status === "success") {
+        login(user.data.token, user.data.response.firstname);
         registerUser(user.data.response.id);
-        router.push("/dashboard");
       }
     } catch (error: any) {
       setErrorMessage(
@@ -82,7 +91,13 @@ export default function Login() {
               placeholder="Enter password"
               id="password"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("password", { required: "Password is required" })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
             />
             {errors.password && (
               <p className="text-red-400 text-xs">

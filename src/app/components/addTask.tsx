@@ -11,6 +11,7 @@ interface AddBoardProps {
   onSave: (data: any) => void;
   isEdit: Boolean;
   editId: number | null;
+  boardOwnerId: number;
 }
 
 export default function AddTask({
@@ -18,6 +19,7 @@ export default function AddTask({
   onSave,
   isEdit,
   editId,
+  boardOwnerId,
 }: AddBoardProps) {
   const {
     register,
@@ -39,7 +41,7 @@ export default function AddTask({
 
   useEffect(() => {
     const getAllUsers = async () => {
-      const user = await getAllUser();
+      const user = await getAllUser(boardOwnerId);
       setUsers(user.response);
     };
 
@@ -100,17 +102,21 @@ export default function AddTask({
               required: "Assignment is required",
             })}
           >
-            {user?.map((u: any) => {
-              return (
-                <option
-                  value={u.id}
-                  key={u.id}
-                  className={`${bgColor(theme)} ${textColor(theme)}}`}
-                >
-                  {u.firstname}
-                </option>
-              );
-            })}
+            <option
+              value={""}
+              className={`${bgColor(theme)} ${textColor(theme)}}`}
+            >
+              {"Select user"}
+            </option>
+            {user?.map((u: any) => (
+              <option
+                value={u.id}
+                key={u.id}
+                className={`${bgColor(theme)} ${textColor(theme)}}`}
+              >
+                {u.firstname}
+              </option>
+            ))}
           </select>
           {errors.assignTo && (
             <p className="text-red-400 text-xs">

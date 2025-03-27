@@ -2,44 +2,43 @@
 import { NavbarProps } from "@/types/navbar";
 import DarkModeToggle from "./darkMode";
 import { useTheme } from "next-themes";
-import { navBgColor } from "@/utils/color";
+import { bgColor, navBgColor } from "@/utils/color";
 import { MdLogout } from "react-icons/md";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useSocket } from "@/context/socketContext";
 import Link from "next/link";
-export default function Navbar({ userName }: NavbarProps) {
+import { useAuth } from "@/context/authContext";
+export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const { socket } = useSocket();
   const router = useRouter();
-  const logout = () => {
-    Cookies.remove("token");
-    Cookies.remove("username");
+  const { logout, userName } = useAuth();
+  const logOut = () => {
+    logout();
     socket?.disconnect();
     setTheme("light");
-    router.push("/login");
   };
   return (
-    <header className={`${navBgColor(theme)} shadow-md `}>
-      <div className=" mx-auto flex justify-between items-center py-4 px-6">
+    <header className={`${navBgColor(theme)} shadow-md`}>
+      <div className="mx-auto flex justify-between items-center py-4 px-6">
         <div className="flex items-center">
-          <Link href={`/dashboard`}>
-            <span className="font-semibold text-xl">{"Kanban Board"}</span>
+          <Link href="/dashboard">
+            <span className="font-semibold text-xl">Kanban Board</span>
           </Link>
         </div>
 
-        <div className="flex items-center justify-center ">
+        <div className="flex items-center justify-center">
           <span className="mx-2">
             <DarkModeToggle />
           </span>
           <span className="font-semibold text-xl">
-            {"Welcome" +
-              " " +
-              (userName
-                ? userName!.replace(/\b\w/g, (char) => char.toUpperCase())
-                : "")}
+            Welcome{" "}
+            {userName
+              ? userName.replace(/\b\w/g, (char) => char.toUpperCase())
+              : ""}
           </span>
-          <div onClick={logout} className="mx-2 cursor-pointer" title="Logout">
+          <div onClick={logOut} className="mx-2 cursor-pointer" title="Logout">
             <MdLogout size={20} />
           </div>
         </div>

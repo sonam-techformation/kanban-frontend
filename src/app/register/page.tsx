@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signup } from "../api/authApi";
+import { useAuth } from "@/context/authContext";
 export default function Register() {
   const {
     register,
@@ -12,8 +13,14 @@ export default function Register() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const { token, login } = useAuth();
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (token) router.push("/dashboard");
+  }, [token, router]);
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     setErrorMessage(null); // Clear previous errors
@@ -25,7 +32,7 @@ export default function Register() {
       };
       const response = await signup(register);
       if (response && response.data.status === "success") {
-        router.push("/dashboard");
+        login(response.data.token, response.data.response.firstname);
       }
     } catch (error: any) {
       setErrorMessage(
@@ -104,7 +111,13 @@ export default function Register() {
               placeholder="Enter password"
               id="password"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("password", { required: "Password is required" })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
             />
             {errors.password && (
               <p className="text-red-400 text-xs">
@@ -126,6 +139,10 @@ export default function Register() {
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
               {...register("cpassword", {
                 required: "Confirm Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
                 validate: (data: string) => {
                   const password = getValues("password");
                   if (password === data) {

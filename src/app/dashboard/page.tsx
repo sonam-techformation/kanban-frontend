@@ -4,13 +4,16 @@ import Board from "../components/board";
 import Modal from "../components/modal";
 import AddBoard from "../components/addBoard";
 import { Boards } from "@/types/board";
-import { Key, useState } from "react";
+import { Key, useEffect, useState } from "react";
 import { createOrUpdateBoard, deleteBoard, getBoards } from "../api/boardApi";
 import { useApiMutation } from "@/lib/useApiMutation";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { bgColor, secondaryBgColor } from "@/utils/color";
 import { Pagination } from "../components/pagination";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/authContext";
+import toast from "react-hot-toast";
 interface BoardsResponse {
   data: Boards[];
   pagination: {
@@ -42,11 +45,24 @@ export default function Dashboard() {
     data: boards,
     error,
     isLoading,
+    isError,
   } = useQuery<BoardsResponse, Error>({
     queryKey: ["boards", pagination.page, pagination.limit], // Corrected queryKey usage
     queryFn: async () => getBoards(pagination.page, pagination.limit),
     retry: false,
+    staleTime: 0,
   });
+
+  const router = useRouter();
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) {
+      router.replace("/login"); // Redirect if no token
+    } else {
+      router.replace("/dashboard"); // Redirect if token exists
+    }
+  }, [token, router]);
 
   // Add this interface at the top of your file
   interface MutationContext {
@@ -80,8 +96,10 @@ export default function Dashboard() {
               ),
             }
           );
+          toast.success("Board updated successfully");
         } else {
           queryClient.invalidateQueries({ queryKey: ["boards"] });
+          toast.success("Board added successfully");
         }
       }
 
@@ -160,6 +178,8 @@ export default function Dashboard() {
                 page: Math.max(prev.page - 1, 1),
               }));
             }
+
+            toast.success("Board deleted successfully");
           });
       },
     }
@@ -205,12 +225,12 @@ export default function Dashboard() {
             </button>
           </div>
           <div>
+            {isError && "Error loading boards"}
             <div
               className={`flex flex-wrap rounded-lg shadow-lg p-6 ${secondaryBgColor(
                 theme
               )}`}
             >
-              {error ? "Error loading boards" : null}
               {isLoading ? (
                 <div>Loading...</div>
               ) : (

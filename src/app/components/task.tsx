@@ -8,6 +8,7 @@ import { deleteTaskFromList } from "../api/taskApi";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { listTextColor } from "@/utils/color";
 import { useTheme } from "next-themes";
+import toast from "react-hot-toast";
 
 export const Task: React.FC<TaskProps> = ({ task, moveTask, columnId }) => {
   const { theme } = useTheme();
@@ -29,6 +30,7 @@ export const Task: React.FC<TaskProps> = ({ task, moveTask, columnId }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["list"], exact: true });
+      toast.success("Task deleted successfully");
     },
   });
 
@@ -51,6 +53,14 @@ export const Task: React.FC<TaskProps> = ({ task, moveTask, columnId }) => {
           </p>
         </div>
         <div>
+          {task.assignTo && (
+            <span
+              className="text-xs mx-2 bg-indigo-700 text-white rounded-4xl  px-2 py-1  focus:outline-none hover:bg-indigo-800"
+              title={task.assignTo}
+            >
+              {task.assignTo.charAt(0).toUpperCase()}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => deleteTask(task.id)}

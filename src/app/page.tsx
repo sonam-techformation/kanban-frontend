@@ -1,16 +1,19 @@
 "use client";
-import Cookies from "js-cookie";
-import Dashboard from "./dashboard/page";
-import Login from "./login/page";
-import DashboardLayout from "./dashboard/layout";
+import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  const token = Cookies.get("token");
-  return token ? (
-    <DashboardLayout>
-      <Dashboard />
-    </DashboardLayout>
-  ) : (
-    <Login />
-  );
+  const { token } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!token) {
+      router.push("/login");
+    } else {
+      router.push("/dashboard");
+    }
+  });
+
+  return null;
 }

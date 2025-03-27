@@ -4,6 +4,7 @@ export interface TaskProps {
     id: number;
     description: string;
     position: string;
+    assignTo: string;
   };
   moveTask: (
     taskId: number,

@@ -21,9 +21,12 @@ export default function ListDetail({ id }: PageProps) {
     data: list,
     error,
     isLoading,
+    isError,
   } = useQuery<any[], Error>({
     queryKey: ["list"],
     queryFn: () => getList(+id),
+    staleTime: 0,
+    retry: false,
   });
   const { theme } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,24 +96,25 @@ export default function ListDetail({ id }: PageProps) {
                 </button>
               </div>
             </div>
-            {error ? "Error loading Tasks" : null}
+            {isError && "Error loading Board List"}
           </div>
           <span className="text-sm font-bold mb-10">
             Owner's Name :
             {list &&
-              (list[0].owner?.firstname
+              (list[0]?.owner?.firstname
                 ? " " +
                   list[0].owner?.firstname.replace(/\b\w/g, (char: string) =>
                     char.toUpperCase()
                   )
-                : "")}
+                : "No Record Found")}
           </span>
           <div
             className={`${secondaryBgColor(theme)} border ${borderColor(
               theme
             )} rounded-lg p-5`}
           >
-            <Suspense fallback={<div>Loading...</div>}>
+            {isLoading && "Loading..."}
+            <Suspense>
               <LazyChildComponent initialData={list || []} />
             </Suspense>
           </div>

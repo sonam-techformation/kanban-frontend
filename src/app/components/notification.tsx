@@ -23,7 +23,7 @@ export const Notifications = () => {
 
       // Show toast notification
       toast.success("task assigned to you", {
-        duration: 5000,
+        duration: 10000,
         position: "top-right",
       });
     });
