@@ -29,7 +29,7 @@ api.interceptors.response.use(
     } else if (error.request) {
     } else {
     }
-    return Promise.reject(error.response || error);
+    return Promise.reject(error || "Something went wrong");
   }
 );
 const apiRequest = async (url, method = "GET", data = null) => {

@@ -9,11 +9,11 @@ export const getBoards = async (page: number = 1, limit: number = 10) => {
     );
     if (response.status === "error") return response.response.error;
     return {
-      data: JSON.parse(JSON.stringify(response.response)),
+      data: JSON.parse(JSON.stringify(response.response.boards)),
       pagination: JSON.parse(JSON.stringify(response.pagination)),
     };
   } catch (error: any) {
-    throw error.response;
+    throw error;
   }
 };
 

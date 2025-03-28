@@ -45,6 +45,9 @@ export default function RootLayout({
   }, []);
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>Kanban Board</title>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
