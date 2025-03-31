@@ -25,3 +25,28 @@ export const assignTask = async (assignTo: any) => {
     throw error;
   }
 };
+
+export const updateAssignTask = async (taskId: number | null, data: any) => {
+  try {
+    const response = await apiRequest(
+      `${Constants.API_URL}/assign/${taskId}`,
+      "put",
+      data
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTaskDetailById = async (id: number) => {
+  try {
+    const response = await apiRequest(
+      `${Constants.API_URL}/tasks/${id}`,
+      "get"
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

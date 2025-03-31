@@ -8,7 +8,12 @@ import Cookies from "js-cookie";
 type AuthContextType = {
   token: string | null;
   userName: string | "";
-  login: (token: string, username: string) => void;
+  login: (
+    token: string,
+    username: string,
+    role: string,
+    userId: string
+  ) => void;
   logout: () => void;
 };
 
@@ -26,11 +31,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken) setToken(storedToken);
   }, []);
 
-  const login = (newToken: string, username: string) => {
+  const login = (
+    newToken: string,
+    username: string,
+    role: string,
+    userId: string
+  ) => {
     Cookies.set("token", newToken, { expires: 365 });
     Cookies.set("username", username);
     setToken(newToken);
     setUserName(username);
+    localStorage.setItem("username", username);
+    localStorage.setItem("role", role);
+    localStorage.setItem("userId", userId);
     router.push("/dashboard");
   };
 
@@ -41,6 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.remove("token");
     Cookies.remove("username");
     router.push("/login");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
   };
 
   // Protect routes on client side

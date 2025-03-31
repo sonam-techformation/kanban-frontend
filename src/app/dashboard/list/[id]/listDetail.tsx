@@ -10,6 +10,7 @@ import { bgColor, borderColor, secondaryBgColor } from "@/utils/color";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
+import Button from "@/app/components/button";
 
 const LazyChildComponent = lazy(() => import("../../../components/draggable"));
 interface PageProps {
@@ -72,38 +73,32 @@ export default function ListDetail({ id }: PageProps) {
             <h2 className="text-2xl font-bold ">Board List</h2>
             <div className="flex">
               <div className="mr-2">
-                <button
-                  className="flex  text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+                <Button
                   type="button"
                   onClick={openModal}
-                >
-                  <div className="flex justify-center items-center">
-                    <AiOutlinePlus className="mr-2" />
-                    Add List
-                  </div>
-                </button>
+                  className="flex  text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+                  text="Add List"
+                  icon={<AiOutlinePlus />}
+                ></Button>
               </div>
               <div className="mr-2">
-                <button
-                  className="flex  text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+                <Button
                   type="button"
                   onClick={() => router.push("/dashboard")}
-                >
-                  <div className="flex justify-center items-center">
-                    <MdArrowBack className="mr-2" />
-                    Back
-                  </div>
-                </button>
+                  className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+                  text="Back"
+                  icon={<MdArrowBack />}
+                ></Button>
               </div>
             </div>
             {isError && "Error loading Board List"}
           </div>
           <span className="text-sm font-bold mb-10">
-            Owner's Name :
+            Board's Name :
             {list &&
-              (list[0]?.owner?.firstname
+              (list[0]?.board.name
                 ? " " +
-                  list[0].owner?.firstname.replace(/\b\w/g, (char: string) =>
+                  list[0]?.board.name.replace(/\b\w/g, (char: string) =>
                     char.toUpperCase()
                   )
                 : "No Record Found")}

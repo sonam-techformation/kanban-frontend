@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { MdModeEditOutline } from "react-icons/md";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import Button from "./button";
 
 interface BoardProps {
   name?: string;
@@ -32,22 +33,20 @@ export default function Board({ name, boardId, onEdit, onDelete }: BoardProps) {
         </Link>
         <div className="flex flex-1/2 justify-end">
           <div className="mx-0.5">
-            <button
-              className=" bg-indigo-600 border-0 hover:bg-indigo-700 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline text-xs"
+            <Button
               type="button"
+              className=" bg-indigo-600 border-0 hover:bg-indigo-700 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline text-xs"
+              icon={<MdModeEditOutline />}
               onClick={onEdit}
-            >
-              <MdModeEditOutline />
-            </button>
+            ></Button>
           </div>
           <div className="mx-0.5">
-            <button
-              className=" bg-red-700 hover:bg-red-800 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline text-xs"
+            <Button
               type="button"
+              className=" bg-red-700 hover:bg-red-800 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline text-xs"
+              icon={<RiDeleteBin5Fill />}
               onClick={onDelete}
-            >
-              <RiDeleteBin5Fill />
-            </button>
+            ></Button>
           </div>
         </div>
       </div>

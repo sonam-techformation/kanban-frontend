@@ -1,9 +1,11 @@
 "use client";
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { FieldError, useForm } from "react-hook-form";
 import { apiRequest } from "@/interceptor/interceptor";
 import { Constants } from "@/utils/constant";
 import { useTheme } from "next-themes";
+import Button from "./button";
+import InputController from "./inputController";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -24,6 +26,7 @@ export default function AddBoard({
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors },
   } = useForm();
   const { theme } = useTheme();
@@ -50,39 +53,36 @@ export default function AddBoard({
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
-          <label htmlFor="name" className="block  text-sm font-bold mb-2">
-            {labelName}
-          </label>
-          <input
+          <InputController
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            id="name"
+            name="name"
+            label={labelName}
+            control={control}
             type="text"
             placeholder="Enter name"
-            id="name"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            {...register("name", { required: "Name is required" })}
-          />
-          {errors.firstname && (
-            <p className="text-red-400 text-xs">
-              {errors?.firstname!.message as string}
-            </p>
-          )}
+            required={true}
+            rules={{
+              required: "Name is required",
+            }}
+            error={errors.name as FieldError}
+          ></InputController>
         </div>
         <div className="flex flex-1/2 justify-end">
           <div className="mx-0.5">
-            <button
-              className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+            <Button
               type="submit"
-            >
-              Save
-            </button>
+              className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+              text="Save"
+            ></Button>
           </div>
           <div className="mx-0.5">
-            <button
-              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+            <Button
               type="button"
+              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+              text="Cancel"
               onClick={handleClose}
-            >
-              Cancel
-            </button>
+            ></Button>
           </div>
         </div>
       </form>

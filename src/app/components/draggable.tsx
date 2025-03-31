@@ -153,7 +153,7 @@ export default function Draggable({ initialData }: any) {
   return (
     <>
       <DndProvider backend={HTML5Backend}>
-        <div className="flex flex-wrap gap-4 p-4 ">
+        <div className="flex flex-wrap gap-4 p-4 justify-center ">
           {columns.map((column: any) => (
             <Column
               key={column.id}

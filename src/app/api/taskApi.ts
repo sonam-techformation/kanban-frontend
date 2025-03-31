@@ -65,3 +65,16 @@ export const moveTaskList = async (taskId: number, reorderData: any) => {
     throw error;
   }
 };
+
+export const editTaskInList = async (taskId: number | null, data: any) => {
+  try {
+    const response = await apiRequest(
+      `${Constants.API_URL}/tasks/${taskId}`,
+      "put",
+      data
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

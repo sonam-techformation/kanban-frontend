@@ -1,7 +1,8 @@
 "use client";
-import { bgColor, secondaryBgColor } from "@/utils/color";
+import { secondaryBgColor } from "@/utils/color";
 import { useTheme } from "next-themes";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
+import Button from "./button";
 
 interface PaginationProps {
   totalItems: number;
@@ -54,17 +55,17 @@ export const Pagination = ({
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
-        <button
+        <Button
           key={i}
           onClick={() => onPageChange(i)}
           className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
             currentPage === i
               ? "z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              : " ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+              : " ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 hover:text-black"
           }`}
-        >
-          {i}
-        </button>
+          text={`${i}`}
+          isDisabled={false}
+        />
       );
     }
 
@@ -90,25 +91,21 @@ export const Pagination = ({
             aria-label="Pagination"
             className="isolate inline-flex -space-x-px rounded-md shadow-xs"
           >
-            <button
+            <Button
               onClick={handlePrevious}
-              disabled={currentPage === 1}
+              isDisabled={currentPage === 1}
               className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-            >
-              <span className="sr-only">Previous</span>
-              <MdChevronLeft aria-hidden="true" className="size-5" />
-            </button>
+              icon={<MdChevronLeft aria-hidden="true" className="size-5" />}
+            />
 
             {renderPageNumbers()}
 
-            <button
+            <Button
               onClick={handleNext}
-              disabled={currentPage === totalPages}
+              isDisabled={currentPage === totalPages}
               className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-            >
-              <span className="sr-only">Next</span>
-              <MdChevronRight aria-hidden="true" className="size-5" />
-            </button>
+              icon={<MdChevronRight aria-hidden="true" className="size-5" />}
+            />
           </nav>
         </div>
       </div>

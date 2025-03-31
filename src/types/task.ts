@@ -12,5 +12,6 @@ export interface TaskProps {
     toColumnId: number,
     droppedIndex: number
   ) => void;
+  boardOwnerId: number;
   columnId: number;
 }

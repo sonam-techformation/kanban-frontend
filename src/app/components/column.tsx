@@ -14,6 +14,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { assignTask } from "../api/taskAssignApi";
 import toast from "react-hot-toast";
+import Button from "./button";
 
 export const Column: React.FC<ColumnProps> = ({
   column,
@@ -140,13 +141,13 @@ export const Column: React.FC<ColumnProps> = ({
               : ""}
           </h2>
         </div>
-        <button
+
+        <Button
           type="button"
-          onClick={openModal}
           className="mb-2 p-1 bg-green-700 border-0 py-1 px-1 focus:outline-none hover:bg-green-700 text-white rounded text-xs"
-        >
-          <AiOutlinePlus />
-        </button>
+          icon={<AiOutlinePlus />}
+          onClick={openModal}
+        ></Button>
       </div>
       <div ref={dropTask as unknown as React.Ref<HTMLDivElement>}>
         {column.tasks.length > 0 ? (
@@ -156,6 +157,7 @@ export const Column: React.FC<ColumnProps> = ({
               task={task}
               moveTask={moveTask}
               columnId={column.id}
+              boardOwnerId={column.board_id}
             />
           ))
         ) : (

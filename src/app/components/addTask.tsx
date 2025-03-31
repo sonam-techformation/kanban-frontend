@@ -1,10 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldError, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { getAllUser } from "../api/taskAssignApi";
-import { bgColor, textColor } from "@/utils/color";
+import { getAllUser, getTaskDetailById } from "../api/taskAssignApi";
 import { useTheme } from "next-themes";
+import Button from "./button";
+import InputController from "./inputController";
+import SelectController from "./selectController";
 
 interface AddBoardProps {
   onClose: () => void;
@@ -26,6 +28,7 @@ export default function AddTask({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm();
   const router = useRouter();
@@ -47,100 +50,86 @@ export default function AddTask({
 
     getAllUsers();
   }, []);
+
+  useEffect(() => {
+    console.log(editId);
+    if (editId) {
+      const getTaskDetail = async () => {
+        const user = await getTaskDetailById(editId);
+        console.log("hjdsfsjfhsd", user, editId);
+        setValue("title", user.response.title);
+        setValue("description", user.response.description);
+        setValue("assignTo", user.response.assignTo);
+      };
+      getTaskDetail();
+    }
+  }, [isEdit, editId]);
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
-          <label htmlFor="title" className="block  text-sm font-bold mb-2">
-            {"Title"}
-          </label>
-          <input
+          <InputController
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            id="title"
+            name="title"
+            label={"Title"}
+            control={control}
             type="text"
             placeholder="Enter title"
-            id="title"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            {...register("title", { required: "Title is required" })}
-          />
-          {errors.title && (
-            <p className="text-red-400 text-xs">
-              {errors?.title!.message as string}
-            </p>
-          )}
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="description"
-            className="block  text-sm font-bold mb-2"
-          >
-            {"Description"}
-          </label>
-          <input
-            type="text"
-            placeholder="Enter description"
-            id="description"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            {...register("description", {
-              required: "Description is required",
-            })}
-          />
-          {errors.description && (
-            <p className="text-red-400 text-xs">
-              {errors?.description!.message as string}
-            </p>
-          )}
+            required={true}
+            rules={{
+              required: "Title is required",
+            }}
+            error={errors.title as FieldError}
+          ></InputController>
         </div>
 
         <div className="mb-4">
-          <label htmlFor="assignTo" className="block  text-sm font-bold mb-2">
-            {"Assign To"}
-          </label>
-          <select
-            id="assignTo"
-            aria-placeholder="Assign To"
+          <InputController
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            {...register("assignTo", {
-              required: "Assignment is required",
-            })}
-          >
-            <option
-              value={""}
-              className={`${bgColor(theme)} ${textColor(theme)}}`}
-            >
-              {"Select user"}
-            </option>
-            {user?.map((u: any) => (
-              <option
-                value={u.id}
-                key={u.id}
-                className={`${bgColor(theme)} ${textColor(theme)}}`}
-              >
-                {u.firstname}
-              </option>
-            ))}
-          </select>
-          {errors.assignTo && (
-            <p className="text-red-400 text-xs">
-              {errors?.assignTo!.message as string}
-            </p>
-          )}
+            id="description"
+            name="description"
+            label={"Description"}
+            control={control}
+            type="text"
+            placeholder="Enter description"
+            required={true}
+            rules={{
+              required: "Description is required",
+            }}
+            error={errors.description as FieldError}
+          ></InputController>
+        </div>
+
+        <div className="mb-4">
+          <SelectController
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            id="assignTo"
+            name="assignTo"
+            label={"Assign To"}
+            control={control}
+            options={user}
+            required={true}
+            rules={{ required: "Assignment is required" }}
+            error={errors.assignTo as FieldError}
+          />
         </div>
         <div className="flex flex-1/2 justify-end">
           <div className="mx-0.5">
-            <button
-              className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+            <Button
               type="submit"
-            >
-              Save
-            </button>
+              className=" bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+              text="Save"
+            ></Button>
           </div>
           <div className="mx-0.5">
-            <button
-              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+            <Button
               type="button"
+              className=" bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+              text="Cancel"
               onClick={handleClose}
-            >
-              Cancel
-            </button>
+            ></Button>
           </div>
         </div>
       </form>

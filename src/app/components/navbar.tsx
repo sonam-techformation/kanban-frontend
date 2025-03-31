@@ -36,7 +36,10 @@ export default function Navbar() {
             Welcome{" "}
             {userName
               ? userName.replace(/\b\w/g, (char) => char.toUpperCase())
-              : ""}
+              : localStorage.getItem("username") &&
+                localStorage
+                  .getItem("username")!
+                  .replace(/\b\w/g, (char) => char.toUpperCase())}
           </span>
           <div onClick={logOut} className="mx-2 cursor-pointer" title="Logout">
             <MdLogout size={20} />

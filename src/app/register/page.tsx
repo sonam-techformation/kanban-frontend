@@ -1,16 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldError, useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signup } from "../api/authApi";
 import { useAuth } from "@/context/authContext";
+import Button from "../components/button";
+import InputController from "../components/inputController";
 export default function Register() {
   const {
     register,
     handleSubmit,
     getValues,
     formState: { errors },
+    control,
   } = useForm();
   const router = useRouter();
   const { token, login } = useAuth();
@@ -32,7 +35,12 @@ export default function Register() {
       };
       const response = await signup(register);
       if (response && response.data.status === "success") {
-        login(response.data.token, response.data.response.firstname);
+        login(
+          response.data.token,
+          response.data.response.firstname,
+          response.data.response.role,
+          response.data.response.id
+        );
       }
     } catch (error: any) {
       setErrorMessage(
@@ -53,91 +61,77 @@ export default function Register() {
           {errorMessage && (
             <p className="text-red-400 text-xs">{errorMessage}</p>
           )}
+
           <div className="mb-4">
-            <label
-              htmlFor="name"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Name
-            </label>
-            <input
+            <InputController
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              id="name"
+              name="firstname"
+              label="Name"
+              control={control}
               type="text"
               placeholder="Enter name"
-              id="name"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("firstname", { required: "Name is required" })}
-            />
-            {errors.firstname && (
-              <p className="text-red-400 text-xs">
-                {errors?.firstname!.message as string}
-              </p>
-            )}
+              required={true}
+              rules={{
+                required: "Name is required",
+              }}
+              error={errors.firstname as FieldError}
+            ></InputController>
           </div>
+
           <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Email
-            </label>
-            <input
+            <InputController
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              id="email"
+              name="email"
+              label="Email"
+              control={control}
               type="email"
               placeholder="Enter email"
-              id="email"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("email", {
+              required={true}
+              rules={{
                 required: "Email is required",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: "Invalid email address",
                 },
-              })}
-            />
-            {errors.email && (
-              <p className="text-red-400 text-xs">
-                {errors?.email!.message as string}
-              </p>
-            )}
+              }}
+              error={errors.email as FieldError}
+            ></InputController>
           </div>
+
           <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Password
-            </label>
-            <input
+            <InputController
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              id="password"
+              name="password"
+              label="Password"
+              control={control}
               type="password"
               placeholder="Enter password"
-              id="password"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("password", {
+              required={true}
+              rules={{
                 required: "Password is required",
                 minLength: {
                   value: 6,
                   message: "Password must be at least 6 characters",
                 },
-              })}
-            />
-            {errors.password && (
-              <p className="text-red-400 text-xs">
-                {errors?.password!.message as string}
-              </p>
-            )}
+              }}
+              error={errors.password as FieldError}
+            ></InputController>
           </div>
-          <div className="mb-6">
-            <label
-              htmlFor="confirmPassword"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              placeholder="Enter confirm password"
-              id="confirmPassword"
+
+          <div className="mb-4">
+            <InputController
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              {...register("cpassword", {
+              id="confirmPassword"
+              name="cpassword"
+              label="Confirm Password"
+              control={control}
+              type="password"
+              placeholder="Enter password"
+              required={true}
+              rules={{
                 required: "Confirm Password is required",
                 minLength: {
                   value: 6,
@@ -151,21 +145,17 @@ export default function Register() {
                     return "password and confirm password should be same";
                   }
                 },
-              })}
-            />
-            {errors.cpassword && (
-              <p className="text-red-400 text-xs">
-                {errors.cpassword.message as string}
-              </p>
-            )}
+              }}
+              error={errors.cpassword as FieldError}
+            ></InputController>
           </div>
-          <button
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+
+          <Button
             type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? "Loading..." : "Register"}
-          </button>
+            text={isLoading ? "Loading..." : "Register"}
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            isDisabled={isLoading}
+          />
         </form>
         <p className="mt-4 text-sm text-gray-600 text-center">
           Already have an account? <Link href="/">Login</Link>

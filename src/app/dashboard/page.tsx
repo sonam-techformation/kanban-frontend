@@ -4,9 +4,8 @@ import Board from "../components/board";
 import Modal from "../components/modal";
 import AddBoard from "../components/addBoard";
 import { Boards } from "@/types/board";
-import { Key, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createOrUpdateBoard, deleteBoard, getBoards } from "../api/boardApi";
-import { useApiMutation } from "@/lib/useApiMutation";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { bgColor, secondaryBgColor } from "@/utils/color";
@@ -14,6 +13,8 @@ import { Pagination } from "../components/pagination";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/authContext";
 import toast from "react-hot-toast";
+import Button from "../components/button";
+import DialogBox from "../components/dialog";
 interface BoardsResponse {
   data: Boards[];
   pagination: {
@@ -36,6 +37,8 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board");
   const [editId, setEditId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number>(0);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -201,11 +204,41 @@ export default function Dashboard() {
   };
 
   const editBoard = (id: number) => {
-    openModal(id, "Edit Board");
+    // Find the board with the matching ID
+    const boardToEdit = boards?.data.find((board) => board.id === id);
+
+    if (!boardToEdit) {
+      toast.error("Board not found");
+      return;
+    }
+
+    const userRole = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId") || -1;
+
+    if (userRole === "admin" && +boardToEdit.user_id !== +userId) {
+      toast.error("You don't have permission to edit this board");
+    } else {
+      openModal(id, "Edit Board");
+    }
   };
 
   const handlePageChange = (page: number) => {
     setPagination((prev) => ({ ...prev, page }));
+  };
+
+  // In your dashboard component
+  const deleteBoardClicked = (id: number) => {
+    setDeleteId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const deleteBoardConfirmed = () => {
+    deleteBoardMutation.mutate(deleteId);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -214,20 +247,19 @@ export default function Dashboard() {
         <div className="container px-4 sm:px-6 lg:px-8 py-5 mx-auto">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Boards</h2>
-            <button
-              className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+
+            <Button
               type="button"
               onClick={() => openModal()}
-            >
-              <div className="flex justify-center items-center">
-                <AiOutlinePlus className="mr-2" /> Create Board
-              </div>
-            </button>
+              className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+              text="Create Board"
+              icon={<AiOutlinePlus />}
+            ></Button>
           </div>
           <div>
             {isError && "Error loading boards"}
             <div
-              className={`flex flex-wrap rounded-lg shadow-lg p-6 ${secondaryBgColor(
+              className={`flex flex-wrap rounded-lg shadow-lg p-6 justify-center ${secondaryBgColor(
                 theme
               )}`}
             >
@@ -240,7 +272,7 @@ export default function Dashboard() {
                       name={board.name}
                       boardId={board.id}
                       onEdit={() => editBoard(board.id)}
-                      onDelete={() => deleteBoardMutation.mutate(board.id)}
+                      onDelete={() => deleteBoardClicked(board.id)}
                     />
                   </div>
                 ))
@@ -271,6 +303,12 @@ export default function Dashboard() {
               labelName={"Board Name"}
             />
           </Modal>
+          <DialogBox
+            isOpen={isDeleteDialogOpen}
+            onConfirm={deleteBoardConfirmed}
+            onCancel={handleCancelDelete}
+            message="Are you sure you want to delete this board? This action cannot be undone."
+          />
         </div>
       </div>
     </>
