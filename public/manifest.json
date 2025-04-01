@@ -1,6 +1,7 @@
 {
-  "name": "kanban-board",
-  "short_name": "kanban-board",
+  "name": "Kanban Board",
+  "short_name": "Kanban Board",
+  "description": "A Next.js PWA application",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff"
