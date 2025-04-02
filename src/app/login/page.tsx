@@ -3,49 +3,49 @@ import React, { useEffect, useState } from "react";
 import { FieldError, useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signup } from "../api/authApi";
+import { loginApi } from "../api/authApi";
+import { useSocket } from "@/context/socketContext";
 import { useAuth } from "@/context/authContext";
 import Button from "../components/button";
 import InputController from "../components/inputController";
-export default function Register() {
+export default function Login() {
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors },
     control,
   } = useForm();
   const router = useRouter();
   const { token, login } = useAuth();
 
+  useEffect(() => {
+    if (token) {
+      router.replace("/dashboard"); // Redirect if already logged in
+    }
+  }, [token, router]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (token) router.push("/dashboard");
-  }, [token, router]);
+  const { registerUser } = useSocket();
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     setErrorMessage(null); // Clear previous errors
     try {
-      let register = {
-        firstname: data.firstname,
-        email: data.email,
-        password: data.password,
-      };
-      const response = await signup(register);
-      if (response && response.data.status === "success") {
+      let user: any;
+      user = await loginApi(data);
+      if (user && user.data.status === "success") {
         login(
-          response.data.token,
-          response.data.response.firstname,
-          response.data.response.role,
-          response.data.response.id
+          user.data.token,
+          user.data.response.firstname,
+          user.data.response.role,
+          user.data.response.id
         );
+        registerUser(user.data.response.id);
       }
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.response.error ||
-          "Signup failed. Please try again."
+          "Login failed. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -55,7 +55,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
-          Register User
+          Login
         </h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           {errorMessage && (
@@ -65,25 +65,8 @@ export default function Register() {
           <div className="mb-4">
             <InputController
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              id="name"
-              name="firstname"
-              label="Name"
-              control={control}
-              type="text"
-              placeholder="Enter name"
-              required={true}
-              rules={{
-                required: "Name is required",
-              }}
-              error={errors.firstname as FieldError}
-            ></InputController>
-          </div>
-
-          <div className="mb-4">
-            <InputController
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              id="email"
               name="email"
+              id="email"
               label="Email"
               control={control}
               type="email"
@@ -121,44 +104,15 @@ export default function Register() {
             ></InputController>
           </div>
 
-          <div className="mb-4">
-            <InputController
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              id="confirmPassword"
-              name="cpassword"
-              label="Confirm Password"
-              control={control}
-              type="password"
-              placeholder="Enter password"
-              required={true}
-              rules={{
-                required: "Confirm Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-                validate: (data: string) => {
-                  const password = getValues("password");
-                  if (password === data) {
-                    return true;
-                  } else {
-                    return "password and confirm password should be same";
-                  }
-                },
-              }}
-              error={errors.cpassword as FieldError}
-            ></InputController>
-          </div>
-
           <Button
             type="submit"
-            text={isLoading ? "Loading..." : "Register"}
+            text={isLoading ? "Loading..." : "Login"}
             className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             isDisabled={isLoading}
           />
         </form>
         <p className="mt-4 text-sm text-gray-600 text-center">
-          Already have an account? <Link href="/">Login</Link>
+          Don't have an account? <Link href="/register">Register</Link>
         </p>
       </div>
     </div>

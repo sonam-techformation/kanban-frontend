@@ -24,16 +24,12 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      console.log("Response error:", error.response.data);
       if (error.response.status === 401) {
-        console.log("Unauthorized, redirecting to login");
       }
     } else if (error.request) {
-      console.error("Request error:", error.request);
     } else {
-      console.error("Error:", error.message);
     }
-    return Promise.reject(error);
+    return Promise.reject(error || "Something went wrong");
   }
 );
 const apiRequest = async (url, method = "GET", data = null) => {

@@ -1,7 +1,19 @@
 "use client";
-import dynamic from "next/dynamic";
-import Page from "./page/page";
+import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  return <Page />;
+  const { token } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!token) {
+      router.push("/login");
+    } else {
+      router.push("/dashboard");
+    }
+  });
+
+  return null;
 }

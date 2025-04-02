@@ -1,200 +1,192 @@
 "use client";
-// import axios from "axios";
-// import Board from "../board";
-// import Navbar from "../navbar";
-// import { useEffect, useState } from "react";
-// import { apiRequest } from "../api/interceptor";
-// import Modal from "../component/modal";
-// import AddBoard from "../component/addBoard";
-// import { useQuery } from "@tanstack/react-query";
-// import { Boards } from "@/types/board";
-// const API_URL = "http://localhost:3000";
-// export default function Dashboard() {
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [modalTitle, setModalTitle] = useState("Add Board");
-
-//   const [board, setBoard] = useState([]);
-//   const [editId, setEditId] = useState(0);
-//   const [isEdit, setIsEdit] = useState(false);
-
-//   const [name, setName] = useState("");
-
-//   useEffect(() => {
-//     let user = localStorage.getItem("username");
-//     setName(user || "");
-//     getBoards();
-//   }, []);
-//   async function getBoards() {
-//     try {
-//       let data = apiRequest(`${API_URL}/getBoards`, "get");
-//       data
-//         .then((board) => {
-//           setBoard(board.response);
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Registration failed:", error);
-//     }
-//   }
-//   const openModal = () => {
-//     console.log("open clicked");
-//     setIsModalOpen(true);
-//   };
-
-//   const closeModal = () => {
-//     setIsModalOpen(false);
-//   };
-
-//   const addNewBoard = (newBoard: any) => {
-//     try {
-//       let data =
-//         modalTitle === "Add Board"
-//           ? apiRequest(`${API_URL}/createBoard`, "post", newBoard)
-//           : apiRequest(`${API_URL}/updateBoard/${editId}`, "put", newBoard);
-//       data
-//         .then((add) => {
-//           setIsModalOpen(false);
-//           getBoards();
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Board error", error);
-//     }
-//   };
-
-//   const editBoard = (id: number) => {
-//     setIsModalOpen(true);
-//     setModalTitle("Edit Board");
-//     setEditId(id);
-//     setIsEdit(true);
-//   };
-
-//   const deleteBoard = (id: number) => {
-//     console.log(id);
-//     try {
-//       let data = apiRequest(`${API_URL}/deleteBoard/${id}`, "delete");
-//       data
-//         .then((board) => {
-//           setBoard((previous) => previous.filter((d: any) => d.id !== id));
-//         })
-//         .catch((error) => console.log(error));
-//     } catch (error) {
-//       console.error("Delete failed:", error);
-//     }
-//   };
-
-//   return (
-//     <>
-//       <Navbar userName={name} />
-//       <div className="container mx-auto p-4">
-//         <div className="flex justify-between items-center mb-4">
-//           <h2>Boards</h2>
-//           <button
-//             className="flex  text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-//             type="button"
-//             onClick={openModal}
-//           >
-//             Create Board
-//           </button>
-//         </div>
-//         <div className="flex flex-wrap">
-//           {board.map((d: any, i: number) => {
-//             return (
-//               <div key={d.id}>
-//                 <Board
-//                   name={d.name}
-//                   boardId={d.id}
-//                   onEdit={() => editBoard(d.id)}
-//                   onDelete={() => deleteBoard(d.id)}
-//                 />
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-//       <Modal modalTitle={modalTitle} isOpen={isModalOpen} onClose={closeModal}>
-//         <AddBoard
-//           onClose={() => setIsModalOpen(false)}
-//           onSave={addNewBoard}
-//           isEdit={isEdit}
-//           editId={editId}
-//           labelName={"Board Name"}
-//         />
-//       </Modal>
-//     </>
-//   );
-// }
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Board from "../board";
-import Navbar from "../navbar";
-import { useContext, useState } from "react";
-import { apiRequest } from "../api/interceptor";
-import Modal from "../component/modal";
-import AddBoard from "../component/addBoard";
+import Board from "../components/board";
+import Modal from "../components/modal";
+import AddBoard from "../components/addBoard";
 import { Boards } from "@/types/board";
-import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { createOrUpdateBoard, deleteBoard, getBoards } from "../api/boardApi";
+import { AiOutlinePlus } from "react-icons/ai";
+import { useTheme } from "next-themes";
+import { bgColor, secondaryBgColor } from "@/utils/color";
+import { Pagination } from "../components/pagination";
 import { useRouter } from "next/navigation";
-import { ThemeContext } from "@/context/themeContext";
-const API_URL = "http://localhost:3000";
+import { useAuth } from "@/context/authContext";
+import toast from "react-hot-toast";
+import Button from "../components/button";
+import DialogBox from "../components/dialog";
+interface BoardsResponse {
+  data: Boards[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    // other pagination fields
+  };
+}
+
+// Assuming these types exist in your codebase
+interface Board {
+  id?: number;
+}
 
 export default function Dashboard() {
-  const router = useRouter();
+  const { theme } = useTheme();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Add Board");
   const [editId, setEditId] = useState<number | null>(null);
-
+  const [deleteId, setDeleteId] = useState<number>(0);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
   // Fetch the boards using React Query
   const {
     data: boards,
     error,
     isLoading,
-  } = useQuery<Boards[], Error>({
-    queryKey: ["boards"], // Corrected queryKey usage
-    queryFn: async () => {
-      const response = await apiRequest(`${API_URL}/boards`, "get");
-      // Force the response to be a plain object using JSON methods
-      console.log(response);
-      const parsedResponse = JSON.parse(JSON.stringify(response.response)); // Ensure it's plain JSON data
-      return parsedResponse;
-    },
+    isError,
+  } = useQuery<BoardsResponse, Error>({
+    queryKey: ["boards", pagination.page, pagination.limit], // Corrected queryKey usage
+    queryFn: async () => getBoards(pagination.page, pagination.limit),
+    retry: false,
+    staleTime: 0,
   });
 
-  // Mutation to create or update a board
-  const addOrUpdateBoard = useMutation({
-    mutationFn: async (newBoard: any) => {
-      if (editId) {
-        const response = await apiRequest(
-          `${API_URL}/boards/${editId}`,
-          "put",
-          newBoard
+  const router = useRouter();
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) {
+      router.replace("/login"); // Redirect if no token
+    } else {
+      router.replace("/dashboard"); // Redirect if token exists
+    }
+  }, [token, router]);
+
+  // Add this interface at the top of your file
+  interface MutationContext {
+    previousBoards: BoardsResponse | undefined;
+  }
+
+  // For addOrUpdateBoard mutation
+  const addOrUpdateBoard = useMutation<Board, Error, Board, MutationContext>({
+    mutationFn: async (newBoard: Board) => {
+      return await createOrUpdateBoard(newBoard, editId || undefined);
+    },
+    onMutate: async (newBoard) => {
+      await queryClient.cancelQueries({
+        queryKey: ["boards", pagination.page, pagination.limit],
+      });
+
+      const previousBoards = queryClient.getQueryData<BoardsResponse>([
+        "boards",
+        pagination.page,
+        pagination.limit,
+      ]);
+
+      if (previousBoards) {
+        if (editId) {
+          queryClient.setQueryData<BoardsResponse>(
+            ["boards", pagination.page, pagination.limit],
+            {
+              ...previousBoards,
+              data: previousBoards.data.map((board) =>
+                board.id === editId ? { ...board, ...newBoard } : board
+              ),
+            }
+          );
+          toast.success("Board updated successfully");
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["boards"] });
+          toast.success("Board added successfully");
+        }
+      }
+
+      return { previousBoards };
+    },
+    onError: (err, newBoard, context) => {
+      if (context?.previousBoards) {
+        queryClient.setQueryData(
+          ["boards", pagination.page, pagination.limit],
+          context.previousBoards
         );
-        return response;
-      } else {
-        const response = await apiRequest(
-          `${API_URL}/boards`,
-          "post",
-          newBoard
-        );
-        return response;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boards"], exact: true });
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["boards", pagination.page, pagination.limit],
+      });
       setIsModalOpen(false);
     },
   });
 
-  // Mutation to delete a board
-  const deleteBoardHandler = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest(`${API_URL}/boards/${id}`, "delete");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boards"], exact: true }); // Invalidate boards data
-    },
-  });
+  // For deleteBoardMutation
+  const deleteBoardMutation = useMutation<void, Error, number, MutationContext>(
+    {
+      mutationFn: (id: number) => deleteBoard(id),
+      onMutate: async (id) => {
+        await queryClient.cancelQueries({
+          queryKey: ["boards", pagination.page, pagination.limit],
+        });
+
+        const previousBoards = queryClient.getQueryData<BoardsResponse>([
+          "boards",
+        ]);
+
+        if (previousBoards) {
+          queryClient.setQueryData<BoardsResponse>(
+            ["boards", pagination.page, pagination.limit],
+            {
+              ...previousBoards,
+              data: previousBoards.data.filter((board) => board.id !== id),
+              pagination: {
+                ...previousBoards.pagination,
+                totalItems: previousBoards.pagination.totalItems - 1,
+                totalPages: Math.ceil(
+                  (previousBoards.pagination.totalItems - 1) /
+                    previousBoards.pagination.limit
+                ),
+              },
+            }
+          );
+        }
+
+        return { previousBoards };
+      },
+      onError: (err, id, context) => {
+        if (context?.previousBoards) {
+          queryClient.setQueryData(
+            ["boards", pagination.page, pagination.limit],
+            context.previousBoards
+          );
+        }
+      },
+      onSettled: () => {
+        queryClient
+          .invalidateQueries({
+            queryKey: ["boards", pagination.page, pagination.limit],
+          })
+          .then(() => {
+            if (
+              boards?.pagination &&
+              boards.data.length === 1 &&
+              pagination.page > 1
+            ) {
+              setPagination((prev) => ({
+                ...prev,
+                page: Math.max(prev.page - 1, 1),
+              }));
+            }
+
+            toast.success("Board deleted successfully");
+          });
+      },
+    }
+  );
 
   // Modal handling
   const openModal = (id: number | null = null, title: string = "Add Board") => {
@@ -212,56 +204,112 @@ export default function Dashboard() {
   };
 
   const editBoard = (id: number) => {
-    openModal(id, "Edit Board");
+    // Find the board with the matching ID
+    const boardToEdit = boards?.data.find((board) => board.id === id);
+
+    if (!boardToEdit) {
+      toast.error("Board not found");
+      return;
+    }
+
+    const userRole = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId") || -1;
+
+    if (userRole === "admin" && +boardToEdit.user_id !== +userId) {
+      toast.error("You don't have permission to edit this board");
+    } else {
+      openModal(id, "Edit Board");
+    }
   };
 
-  const deleteBoard = (id: number) => {
-    deleteBoardHandler.mutate(id);
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
+  };
+
+  // In your dashboard component
+  const deleteBoardClicked = (id: number) => {
+    setDeleteId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const deleteBoardConfirmed = () => {
+    deleteBoardMutation.mutate(deleteId);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   return (
     <>
-      <Navbar userName={Cookies.get("username") || ""} />
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2>Boards</h2>
-          <button
-            className="flex text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-            type="button"
-            onClick={() => openModal()}
-          >
-            Create Board
-          </button>
-        </div>
-        <div className="flex flex-wrap">
-          {isLoading ? (
-            <div>Loading...</div>
-          ) : (
-            boards?.map((board) => (
-              <div key={board.id}>
-                <Board
-                  name={board.name}
-                  boardId={board.id}
-                  onEdit={() => editBoard(board.id)}
-                  onDelete={() => deleteBoard(board.id)}
+      <div className={`min-h-screen ${bgColor(theme)}`}>
+        <div className="container px-4 sm:px-6 lg:px-8 py-5 mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Boards</h2>
+
+            <Button
+              type="button"
+              onClick={() => openModal()}
+              className="flex text-white bg-indigo-500 border-0 py-2 px-3 focus:outline-none hover:bg-indigo-600 rounded text-xs"
+              text="Create Board"
+              icon={<AiOutlinePlus />}
+            ></Button>
+          </div>
+          <div>
+            {isError && "Error loading boards"}
+            <div
+              className={`flex flex-wrap rounded-lg shadow-lg p-6 justify-center ${secondaryBgColor(
+                theme
+              )}`}
+            >
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                boards?.data.map((board) => (
+                  <div key={board.id}>
+                    <Board
+                      name={board.name}
+                      boardId={board.id}
+                      onEdit={() => editBoard(board.id)}
+                      onDelete={() => deleteBoardClicked(board.id)}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+            <div>
+              {boards?.pagination && (
+                <Pagination
+                  totalItems={boards.pagination.totalItems}
+                  limit={boards.pagination.limit}
+                  currentPage={boards.pagination.page}
+                  totalPages={boards.pagination.totalPages}
+                  onPageChange={handlePageChange}
                 />
-              </div>
-            ))
-          )}
-        </div>
-        <Modal
-          modalTitle={modalTitle}
-          isOpen={isModalOpen}
-          onClose={closeModal}
-        >
-          <AddBoard
+              )}
+            </div>
+          </div>
+          <Modal
+            modalTitle={modalTitle}
+            isOpen={isModalOpen}
             onClose={closeModal}
-            onSave={addNewBoard}
-            isEdit={editId !== null}
-            editId={editId}
-            labelName={"Board Name"}
+          >
+            <AddBoard
+              onClose={closeModal}
+              onSave={addNewBoard}
+              isEdit={editId !== null}
+              editId={editId}
+              labelName={"Board Name"}
+            />
+          </Modal>
+          <DialogBox
+            isOpen={isDeleteDialogOpen}
+            onConfirm={deleteBoardConfirmed}
+            onCancel={handleCancelDelete}
+            message="Are you sure you want to delete this board? This action cannot be undone."
           />
-        </Modal>
+        </div>
       </div>
     </>
   );
