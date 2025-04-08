@@ -16,7 +16,7 @@ interface BoardProps {
 export default function Board({ name, boardId, onEdit, onDelete }: BoardProps) {
   const { theme } = useTheme();
   return (
-    <div className="p-4 w-xs md:w:sm">
+    <div className="p-4 w-xs md:w:sm" data-testid="board-container">
       <div
         className={`border ${borderColor(
           theme

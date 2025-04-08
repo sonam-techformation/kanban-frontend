@@ -78,9 +78,12 @@ export const Pagination = ({
         theme
       )}`}
     >
-      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div
+        className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between"
+        data-testid="pagination-root"
+      >
         <div>
-          <p className="text-sm ">
+          <p className="text-sm " data-testid="pagination-info">
             Showing <span className="font-medium">{startItem}</span> to{" "}
             <span className="font-medium">{endItem}</span> of{" "}
             <span className="font-medium">{totalItems}</span> results

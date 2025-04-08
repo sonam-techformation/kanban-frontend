@@ -34,6 +34,7 @@ export default function AddTask({
   const router = useRouter();
   const [user, setUsers] = useState([]);
   const { theme } = useTheme();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const onSubmit = async (data: any) => {
     onSave(data);
   };
@@ -44,22 +45,28 @@ export default function AddTask({
 
   useEffect(() => {
     const getAllUsers = async () => {
-      const user = await getAllUser(boardOwnerId);
-      setUsers(user.response);
+      try {
+        const user = await getAllUser(boardOwnerId);
+        setUsers(user.response);
+      } catch (error: any) {
+        setErrorMessage(error.message);
+      }
     };
 
     getAllUsers();
   }, []);
 
   useEffect(() => {
-    console.log(editId);
     if (editId) {
       const getTaskDetail = async () => {
-        const user = await getTaskDetailById(editId);
-        console.log("hjdsfsjfhsd", user, editId);
-        setValue("title", user.response.title);
-        setValue("description", user.response.description);
-        setValue("assignTo", user.response.assignTo);
+        try {
+          const user = await getTaskDetailById(editId);
+          setValue("title", user.response.title);
+          setValue("description", user.response.description);
+          setValue("assignTo", user.response.assignTo);
+        } catch (error: any) {
+          setErrorMessage(error.message);
+        }
       };
       getTaskDetail();
     }
@@ -67,6 +74,7 @@ export default function AddTask({
 
   return (
     <div>
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
           <InputController

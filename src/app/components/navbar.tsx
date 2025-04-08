@@ -5,14 +5,12 @@ import { useTheme } from "next-themes";
 import { bgColor, navBgColor } from "@/utils/color";
 import { MdLogout } from "react-icons/md";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 import { useSocket } from "@/context/socketContext";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const { socket } = useSocket();
-  const router = useRouter();
   const { logout, userName } = useAuth();
   const logOut = () => {
     logout();

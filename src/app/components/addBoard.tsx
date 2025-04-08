@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FieldError, useForm } from "react-hook-form";
 import { apiRequest } from "@/interceptor/interceptor";
 import { Constants } from "@/utils/constant";
@@ -30,6 +30,7 @@ export default function AddBoard({
     formState: { errors },
   } = useForm();
   const { theme } = useTheme();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const onSubmit = async (data: any) => {
     console.log(data);
     onSave(data);
@@ -41,12 +42,20 @@ export default function AddBoard({
 
   useEffect(() => {
     if (isEdit) {
-      let data = apiRequest(`${Constants.API_URL}/boards/${editId}`, "get");
-      data
-        .then((board) => {
-          setValue("name", board.response.name);
-        })
-        .catch((error) => console.log(error));
+      const getBoardDetail = async () => {
+        try {
+          let data = await apiRequest(
+            `${Constants.API_URL}/boards/${editId}`,
+            "get"
+          );
+          setValue("name", data.response.name);
+        } catch (error: any) {
+          if (error) {
+            // console.log(error);
+          }
+        }
+      };
+      getBoardDetail();
     }
   }, [isEdit, editId]);
   return (

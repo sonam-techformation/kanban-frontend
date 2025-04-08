@@ -14,7 +14,7 @@ interface DialogBoxProps {
   danger?: boolean; // If true, will style confirm button as dangerous action
 }
 
-const DialogBox = ({
+const DialogBox: React.FC<DialogBoxProps> = ({
   isOpen,
   title = "Confirm Deletion",
   message = "Are you sure you want to delete this item?",
@@ -23,7 +23,7 @@ const DialogBox = ({
   confirmText = "Delete",
   cancelText = "Cancel",
   danger = true,
-}: DialogBoxProps) => {
+}) => {
   const { theme } = useTheme();
   if (!isOpen) return null;
   return (

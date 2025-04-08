@@ -58,7 +58,7 @@ const InputController = ({
           />
         )}
       />
-      {error && <p className="text-red-400 text-xs mt-1">{error.message}</p>}
+      {error && <p className="text-red-400 text-xs mt-1">{error?.message}</p>}
     </div>
   );
 };

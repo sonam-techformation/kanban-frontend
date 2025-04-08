@@ -3,8 +3,9 @@ import { useTheme } from "next-themes";
 import { Control, Controller, FieldError, FieldValues } from "react-hook-form";
 
 interface SelectOption {
-  value: string | number;
-  label: string;
+  id: number;
+  firstname: string | number;
+  label?: string;
   disabled?: boolean;
 }
 
