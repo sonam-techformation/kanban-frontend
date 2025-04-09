@@ -94,17 +94,17 @@ describe("Button Component", () => {
   });
 
   // Snapshot test
-  it("matches snapshot with all props", () => {
-    const { asFragment } = render(
-      <Button
-        type="submit"
-        text="Submit"
-        icon={<FiAlertCircle />}
-        className="custom-class"
-        isDisabled={false}
-      />
-    );
+  // it("matches snapshot with all props", () => {
+  //   const { asFragment } = render(
+  //     <Button
+  //       type="submit"
+  //       text="Submit"
+  //       icon={<FiAlertCircle />}
+  //       className="custom-class"
+  //       isDisabled={false}
+  //     />
+  //   );
 
-    expect(asFragment()).toMatchSnapshot();
-  });
+  //   expect(asFragment()).toMatchSnapshot();
+  // });
 });

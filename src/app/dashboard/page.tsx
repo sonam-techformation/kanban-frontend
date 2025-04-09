@@ -22,7 +22,6 @@ interface BoardsResponse {
     limit: number;
     totalItems: number;
     totalPages: number;
-    // other pagination fields
   };
 }
 
@@ -246,7 +245,9 @@ export default function Dashboard() {
       <div className={`min-h-screen ${bgColor(theme)}`}>
         <div className="container px-4 sm:px-6 lg:px-8 py-5 mx-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Boards</h2>
+            <h2 className="text-2xl font-bold" data-testid="dashboard-title">
+              Boards
+            </h2>
 
             <Button
               type="button"

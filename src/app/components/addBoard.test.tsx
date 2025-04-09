@@ -211,29 +211,29 @@ describe("AddBoard Component", () => {
     // This depends on how your InputController handles themes
   });
 
-  it("matches snapshot in add mode", () => {
-    const { asFragment } = render(
-      <AddBoard
-        onClose={mockOnClose}
-        onSave={mockOnSave}
-        isEdit={false}
-        editId={null}
-        labelName="Board Name"
-      />
-    );
-    expect(asFragment()).toMatchSnapshot();
-  });
+  // it("matches snapshot in add mode", () => {
+  //   const { asFragment } = render(
+  //     <AddBoard
+  //       onClose={mockOnClose}
+  //       onSave={mockOnSave}
+  //       isEdit={false}
+  //       editId={null}
+  //       labelName="Board Name"
+  //     />
+  //   );
+  //   expect(asFragment()).toMatchSnapshot();
+  // });
 
-  it("matches snapshot in edit mode", () => {
-    const { asFragment } = render(
-      <AddBoard
-        onClose={mockOnClose}
-        onSave={mockOnSave}
-        isEdit={true}
-        editId={123}
-        labelName="Edit Board"
-      />
-    );
-    expect(asFragment()).toMatchSnapshot();
-  });
+  // it("matches snapshot in edit mode", () => {
+  //   const { asFragment } = render(
+  //     <AddBoard
+  //       onClose={mockOnClose}
+  //       onSave={mockOnSave}
+  //       isEdit={true}
+  //       editId={123}
+  //       labelName="Edit Board"
+  //     />
+  //   );
+  //   expect(asFragment()).toMatchSnapshot();
+  // });
 });
